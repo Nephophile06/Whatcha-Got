@@ -30,7 +30,7 @@
 
 ### Reflection & Public Work
 * [Retrospective](./retrospective.md)
-* [Portfolio / Personal Site]([https://anika-binta-azad-shifa.netlify.app/])
+* [Portfolio / Personal Site]([https://anika-binta-azad-shifa.netlify.app])
 * [Build-in-Public Post]([INSERT_LINKEDIN_POST_LINK_HERE])
 
 ---
