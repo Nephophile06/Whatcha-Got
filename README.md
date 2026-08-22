@@ -12,7 +12,7 @@
 
 ### Project
 * [Project Overview](./README.md)
-* [Figma Prototype]([INSERT_FIGMA_PROTOTYPE_LINK_HERE])
+* [Figma Prototype]([https://www.figma.com/proto/v2ik2R5nBVD2eoFSDrUJE7/High-Fidelity-Screens?node-id=0-1&t=YdO8ehHu6Zt3vr2H-1])
 
 ### Documentation
 * [User Flow](./docs/user-flow.md)
@@ -30,7 +30,7 @@
 
 ### Reflection & Public Work
 * [Retrospective](./retrospective.md)
-* [Portfolio / Personal Site]([INSERT_PORTFOLIO_LINK_HERE])
+* [Portfolio / Personal Site]([https://anika-binta-azad-shifa.netlify.app/])
 * [Build-in-Public Post]([INSERT_LINKEDIN_POST_LINK_HERE])
 
 ---
@@ -58,7 +58,7 @@ The primary user journey focuses on quick decision-making:
 `Onboarding → Login / OTP → Home (Discovery) → Search & Filtering → Recipe Detail → Weekly Meal Planner → Profile`
 
 ## How to Use
-1. Open the [Figma Prototype]([INSERT_FIGMA_PROTOTYPE_LINK_HERE]).
+1. Open the [Figma Prototype]([https://www.figma.com/proto/v2ik2R5nBVD2eoFSDrUJE7/High-Fidelity-Screens?node-id=0-1&t=YdO8ehHu6Zt3vr2H-1]).
 2. Navigate through the onboarding screens to understand the app's core value.
 3. Use the search and filter functionalities to explore meal options based on ingredients or budget.
 4. Click on any recipe to view details and add it to your weekly meal planner.
@@ -93,7 +93,7 @@ Next steps for a production build would include integrating a real recommendatio
 
 ## Prototype
 Experience the fully interactive high-fidelity design here:
-🔗 **[View Figma Prototype]([INSERT_FIGMA_PROTOTYPE_LINK_HERE])**
+🔗 **[View Figma Prototype]([https://www.figma.com/proto/v2ik2R5nBVD2eoFSDrUJE7/High-Fidelity-Screens?node-id=0-1&t=YdO8ehHu6Zt3vr2H-1])**
 
 ## Demo
 Watch a 4-minute walkthrough explaining the core flow, design decisions, and project limitations:
