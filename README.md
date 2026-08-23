@@ -26,7 +26,7 @@
 ### Evaluation & Demo
 * [Usability Testing](./evaluation/usability-testing.md)
 * [V2 Evaluation](./evaluation/v2-results.md)
-* [Demo Video]([INSERT_VIDEO_LINK_HERE])
+* [Demo Video](https://youtu.be/H4L4JkiLks4)
 
 ### Reflection & Public Work
 * [Retrospective](./retrospective.md)
@@ -96,8 +96,8 @@ Experience the fully interactive high-fidelity design here:
 🔗 **[View Figma Prototype](https://www.figma.com/proto/v2ik2R5nBVD2eoFSDrUJE7/High-Fidelity-Screens?node-id=0-1&t=YdO8ehHu6Zt3vr2H-1)**
 
 ## Demo
-Watch a 4-minute walkthrough explaining the core flow, design decisions, and project limitations:
-🎥 **[Watch Demo Video]([INSERT_VIDEO_LINK_HERE])**
+Watch a 3-minute walkthrough explaining the core flow, design decisions, and project limitations:
+🎥 **[Watch Demo Video](https://youtu.be/H4L4JkiLks4)**
 
 ---
 *Designed by Anika Binta Azad Shifa | UX/UI Design Impact Project*
