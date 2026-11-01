@@ -4,25 +4,49 @@
  */
 
 export const colors = {
-  // Brand
-  primary: '#E65100', // Warm culinary deep orange / amber
-  primaryLight: '#FFE0B2',
-  primaryDark: '#BF360C',
+  // Figma Core Palette (8 Swatches)
+  burgundy: '#80091B',
+  rose: '#CC7E85',
+  blush: '#FFE3E6',
+  butter: '#FDF5BF',
+  mint: '#EAF9D9',
+  periwinkle: '#B4CDFF',
+  softBlue: '#D9E6FF',
+  black: '#000000',
+
+  // Brand Semantic
+  brand: '#80091B',
+  brandDark: '#5B0613',
+  brandRose: '#CC7E85',
+  brandBlush: '#FFE3E6',
+
+  primary: '#80091B', // Deep burgundy (Figma brand CTA & hero)
+  primaryLight: '#CC7E85', // Muted rose
+  primaryBlush: '#FFE3E6', // Soft blush
+  primaryDark: '#5B0613',
+
   secondary: '#2E7D32', // Fresh herb green
   secondaryLight: '#E8F5E9',
   accent: '#FFB300', // Warm golden yellow
 
+  // Category & Chip Pastels
+  pastelBlue: '#D9E6FF',
+  pastelYellow: '#FDF5BF',
+  pastelGreen: '#EAF9D9',
+  pastelPeriwinkle: '#B4CDFF',
+  pastelPink: '#FFE3E6',
+
   // Neutrals & Surfaces
-  background: '#F8FAFC', // Slate 50
+  background: '#F8FAFC',
   surface: '#FFFFFF',
-  surfaceSubtle: '#F1F5F9', // Slate 100
-  border: '#CBD5E1', // Slate 300
-  borderFocus: '#E65100',
+  surfaceSubtle: '#F1F5F9',
+  border: '#CBD5E1',
+  borderFocus: '#80091B',
 
   // Typography (High Contrast 7.5:1+)
-  textPrimary: '#0F172A', // Slate 900
-  textSecondary: '#334155', // Slate 700 (accessible contrast)
-  textMuted: '#64748B', // Slate 500
+  textPrimary: '#0F172A',
+  textSecondary: '#334155',
+  textMuted: '#64748B',
   textInverse: '#FFFFFF',
 
   // Semantic
@@ -109,4 +133,3 @@ export default {
   radius,
   shadows,
 };
-
