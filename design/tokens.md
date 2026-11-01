@@ -7,21 +7,33 @@ This document outlines the foundation tokens, contrast ratios, and design princi
 ## 1. Accessibility & Contrast Principles
 
 - **Persistent Input Labels**: Every input retains an explicit visible label above the field, preventing cognitive load and memory strain.
-- **7.5:1 Contrast Minimum**: Primary text (`#0F172A`) against surface background (`#FFFFFF` or `#F8FAFC`) exceeds WCAG AAA requirements (7.5:1 vs required 7:1).
+- **7.5:1 Contrast Minimum**: Primary text (`#0F172A`) against surface background (`#FFFFFF` or `#F8FAFC`) exceeds WCAG AAA requirements.
 - **Clear Action-Oriented Microcopy**: Replaced vague CTA labels with direct verbs (e.g., `Save Goal`, `Share Recipe`, `Add to Grocery List`).
 
 ---
 
-## 2. Color Palette
+## 2. Color Palette (Figma Swatches)
 
-### Brand Colors
+### Core Figma Palette
+| Token | Hex | Role / Usage |
+| :--- | :--- | :--- |
+| `burgundy` (`primary`) | `#80091B` | Deep Burgundy / Maroon (Primary brand CTA, header banner, hero background) |
+| `rose` (`primaryLight`) | `#CC7E85` | Muted Rose (Secondary brand accent, border hover, active chip text) |
+| `blush` (`pastelPink`) | `#FFE3E6` | Soft Blush Pink (Chip background, tags, delicate surface) |
+| `butter` (`pastelYellow`) | `#FDF5BF` | Cream / Butter Yellow (Quick meal tags, breakfast category, highlight) |
+| `mint` (`pastelGreen`) | `#EAF9D9` | Pastel Mint Green (Healthy/Veggie badge, dietary chip, fresh surface) |
+| `periwinkle` (`pastelPeriwinkle`) | `#B4CDFF` | Periwinkle Sky (Interactive pills, category chip, cold drinks/specials) |
+| `softBlue` (`pastelBlue`) | `#D9E6FF` | Soft Blue Canvas (Background gradient tint, category badge) |
+| `black` | `#000000` | Pure Black (High-contrast typography, deep accents) |
+
+### Semantic Brand Hierarchy
 | Token | Hex | Role | Contrast Ratio |
 | :--- | :--- | :--- | :--- |
-| `primary` | `#E65100` | Culinary Deep Amber / Orange (Primary Action) | 4.8:1 on white |
-| `primaryLight` | `#FFE0B2` | Subtle tint for active cards & badges | Accent tint |
-| `primaryDark` | `#BF360C` | High contrast press states | 7.6:1 on white |
-| `secondary` | `#2E7D32` | Fresh Herb Green (Success & positive states) | 5.2:1 on white |
-| `secondaryLight`| `#E8F5E9` | Light green surface for chips & badges | Surface |
+| `primary` | `#80091B` | Brand Primary CTA & Hero | 8.8:1 on white (AAA) |
+| `primaryLight` | `#CC7E85` | Muted Rose Tint | Accent & Border |
+| `primaryBlush` | `#FFE3E6` | Soft Blush Surface | Chip / Card Tint |
+| `secondary` | `#2E7D32` | Fresh Herb Green | 5.2:1 on white |
+| `secondaryLight`| `#E8F5E9` | Light green surface | Surface |
 | `accent` | `#FFB300` | Warm golden highlights | Accent |
 
 ### Neutrals & Surfaces
@@ -31,7 +43,7 @@ This document outlines the foundation tokens, contrast ratios, and design princi
 | `surface` | `#FFFFFF` | Cards, modals, bottom sheets |
 | `surfaceSubtle` | `#F1F5F9` | Inputs, pills, tab backgrounds |
 | `border` | `#CBD5E1` | Default input and card borders (Slate 300) |
-| `borderFocus` | `#E65100` | Focused input border |
+| `borderFocus` | `#80091B` | Focused input border |
 
 ### Accessible Typography
 | Token | Hex | Role | Ratio |
@@ -87,4 +99,3 @@ Base unit: `8px`
 - `lg`: `16px` (recipe cards, summary containers)
 - `xl`: `24px` (modals, bottom sheets)
 - `full`: `9999px` (circular pills, avatars, action chips)
-
