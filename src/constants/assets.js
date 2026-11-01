@@ -1,27 +1,30 @@
 /**
  * Whatcha Got? - Central Asset Registry
- * Provides unified access to all static images, icons, and illustrations.
+ * Provides unified access to all static images, icons, illustrations, and animations.
  */
 
 export const ASSETS = {
   images: {
-    logo: require('../../assets/images/icon.png'),
-    splash: require('../../assets/images/splash-icon.png'),
-    favicon: require('../../assets/images/favicon.png'),
-    emptyPlate: null, // Placeholder or remote fallback
-    chefAvatar: null,
-  },
-  illustrations: {
-    onboarding1: null,
-    onboarding2: null,
-    onboarding3: null,
-    emptySearch: null,
-    offline: null,
+    logo: require('../../assets/icon.png'),
+    splash: require('../../assets/splash-icon.png'),
+    favicon: require('../../assets/favicon.png'),
+    onboardingHero: require('../../assets/images/onboarding-hero.png'),
+    chickenRoastPolao: require('../../assets/images/chicken-roast-polao.png'),
+    almonds: require('../../assets/images/almonds.png'),
   },
   icons: {
-    // Registered custom icon mappings or glyph identifiers
+    google: require('../../assets/icons/google-icon.png'),
+    phone: require('../../assets/icons/phone-icon.png'),
+  },
+  illustrations: {
+    catChefWhisking: require('../../assets/illustrations/cat-chef-whisking.png'),
+    cuteBunny: require('../../assets/illustrations/cute-bunny.png'),
+    thinkingCat: require('../../assets/illustrations/thinking-cat.png'),
+    cookieDoughBowl: require('../../assets/illustrations/cookie-dough-bowl.png'),
+  },
+  animations: {
+    bunnyAndChicks: require('../../assets/illustrations/bunny-and-chicks-animation.json'),
   },
 };
 
 export default ASSETS;
-
