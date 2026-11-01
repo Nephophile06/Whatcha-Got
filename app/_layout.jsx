@@ -1,14 +1,26 @@
+import '../global.css';
 import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
 import { useAuthStore } from '../src/store/authStore';
 import { colors } from '../src/theme/tokens';
+
+// Prevent auto-hiding the splash screen until resources are loaded
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   const checkSession = useAuthStore((state) => state.checkSession);
 
   useEffect(() => {
-    checkSession();
+    async function prepare() {
+      try {
+        await checkSession();
+      } finally {
+        await SplashScreen.hideAsync().catch(() => {});
+      }
+    }
+    prepare();
   }, [checkSession]);
 
   return (
@@ -56,4 +68,3 @@ export default function RootLayout() {
     </>
   );
 }
-
