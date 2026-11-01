@@ -1,141 +1,156 @@
+/**
+ * Input — labelled text field with persistent label above the field.
+ *
+ * Props:
+ * - label: string, always visible above the field (never placeholder-only)
+ * - value / onChangeText
+ * - placeholder, helperText
+ * - error: string | boolean; shows the error message and error styling
+ * - disabled: boolean, dims the field and blocks editing
+ * - compact: boolean, 44px field height and 14px value text (dense forms)
+ * - secure / secureTextEntry: password mode (adds a show/hide toggle)
+ * - showPasswordToggle: override the automatic password toggle
+ * - required: boolean, adds a required asterisk
+ * - leftIcon / rightIcon: optional React nodes
+ * - className / style / inputClassName / inputStyle
+ *
+ * Contrast: textPrimary on surface exceeds WCAG AAA; muted placeholders meet AA.
+ */
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { colors, radius, spacing, typography } from '../../theme/tokens';
+import { View, Text, TextInput, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../../theme/tokens';
+import { cx } from './cx';
 
-export const Input = ({
+export function Input({
   label,
   value,
   onChangeText,
   placeholder,
   error,
   helperText,
-  secureTextEntry,
-  keyboardType = 'default',
-  autoCapitalize = 'none',
+  disabled = false,
+  compact = false,
+  secure = false,
+  secureTextEntry = false,
+  showPasswordToggle,
+  required = false,
   leftIcon,
   rightIcon,
+  className,
   style,
+  inputClassName,
   inputStyle,
-  required = false,
+  onFocus,
+  onBlur,
   ...props
-}) => {
-  const [isFocused, setIsFocused] = useState(false);
+}) {
+  const [focused, setFocused] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  const isPassword = secure || secureTextEntry;
+  const canTogglePassword = showPasswordToggle ?? isPassword;
+  const hasError = Boolean(error);
+  const errorMessage = typeof error === 'string' ? error : null;
+  const isFilled = value !== undefined && value !== null && String(value).length > 0;
 
   return (
-    <View style={[styles.container, style]}>
-      {/* Persistent label - stays visible at all times */}
+    <View className={cx('mb-md w-full', className)} style={style}>
       {label ? (
-        <View style={styles.labelRow}>
-          <Text style={[styles.label, isFocused && styles.labelFocused, error && styles.labelError]}>
-            {label}
-            {required ? <Text style={styles.requiredAsterisk}> *</Text> : null}
-          </Text>
-        </View>
+        <Text
+          className={cx(
+            'mb-xs font-sans-medium text-sm',
+            hasError
+              ? 'text-error'
+              : disabled
+                ? 'text-text-muted'
+                : focused
+                  ? 'text-primary'
+                  : 'text-text-primary'
+          )}
+        >
+          {label}
+          {required ? <Text className="text-error"> *</Text> : null}
+        </Text>
       ) : null}
 
       <View
-        style={[
-          styles.inputContainer,
-          isFocused && styles.inputFocused,
-          error ? styles.inputError : null,
-        ]}
+        className={cx(
+          compact ? 'min-h-[44px]' : 'min-h-[52px]',
+          'flex-row items-center rounded-md border-[1.5px] px-md',
+          hasError
+            ? 'border-error bg-error-light'
+            : disabled
+              ? 'border-border bg-surface-subtle opacity-60'
+              : focused
+                ? 'border-primary bg-surface'
+                : isFilled
+                  ? 'border-text-muted bg-surface'
+                  : 'border-text-muted bg-surface-subtle'
+        )}
       >
-        {leftIcon ? <View style={styles.iconSlot}>{leftIcon}</View> : null}
+        {leftIcon ? <View className="mr-sm">{leftIcon}</View> : null}
+
         <TextInput
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
           placeholderTextColor={colors.textMuted}
-          secureTextEntry={secureTextEntry}
-          keyboardType={keyboardType}
-          autoCapitalize={autoCapitalize}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          style={[styles.input, inputStyle]}
+          selectionColor={colors.primary}
+          editable={!disabled}
+          secureTextEntry={isPassword && !passwordVisible}
           accessibilityLabel={label}
+          accessibilityState={{ disabled }}
+          onFocus={(event) => {
+            setFocused(true);
+            onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            setFocused(false);
+            onBlur?.(event);
+          }}
+          autoCapitalize="none"
+          className={cx(
+            'flex-1 bg-transparent py-sm font-sans',
+            compact ? 'text-sm' : 'text-md',
+            disabled ? 'text-text-muted' : 'text-text-primary',
+            inputClassName
+          )}
+          style={inputStyle}
           {...props}
         />
-        {rightIcon ? <View style={styles.iconSlot}>{rightIcon}</View> : null}
+
+        {canTogglePassword ? (
+          <Pressable
+            onPress={() => setPasswordVisible((visible) => !visible)}
+            hitSlop={4}
+            accessibilityRole="button"
+            accessibilityLabel={passwordVisible ? 'Hide password' : 'Show password'}
+            className="ml-sm h-11 w-11 items-center justify-center"
+          >
+            <Ionicons
+              name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
+              size={20}
+              color={colors.textMuted}
+            />
+          </Pressable>
+        ) : rightIcon ? (
+          <View className="ml-sm">{rightIcon}</View>
+        ) : null}
       </View>
 
-      {/* Field error or helper text */}
-      {error ? (
-        <Text style={styles.errorText} accessibilityRole="alert">
-          {error}
+      {hasError && errorMessage ? (
+        <Text
+          accessibilityRole="alert"
+          className="mt-xs font-sans-medium text-xs text-error"
+        >
+          {errorMessage}
         </Text>
       ) : helperText ? (
-        <Text style={styles.helperText}>{helperText}</Text>
+        <Text className="mt-xs font-sans text-xs text-text-secondary">{helperText}</Text>
       ) : null}
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: spacing.md,
-    width: '100%',
-  },
-  labelRow: {
-    marginBottom: spacing.xs + 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  // High contrast 7.5:1 ratio label
-  label: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    letterSpacing: 0.2,
-  },
-  labelFocused: {
-    color: colors.primary,
-  },
-  labelError: {
-    color: colors.error,
-  },
-  requiredAsterisk: {
-    color: colors.error,
-    fontWeight: '700',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    minHeight: 50,
-  },
-  inputFocused: {
-    borderColor: colors.borderFocus,
-    backgroundColor: colors.surface,
-  },
-  inputError: {
-    borderColor: colors.error,
-    backgroundColor: colors.errorLight,
-  },
-  input: {
-    flex: 1,
-    fontSize: typography.fontSize.md,
-    color: colors.textPrimary,
-    paddingVertical: spacing.sm,
-  },
-  iconSlot: {
-    marginRight: spacing.sm,
-  },
-  errorText: {
-    fontSize: typography.fontSize.xs,
-    color: colors.error,
-    marginTop: spacing.xs,
-    fontWeight: '500',
-  },
-  helperText: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-});
+}
 
 export default Input;
-

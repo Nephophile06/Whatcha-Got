@@ -24,6 +24,8 @@ export const colors = {
   primaryLight: '#CC7E85', // Muted rose
   primaryBlush: '#FFE3E6', // Soft blush
   primaryDark: '#5B0613',
+  primaryGlow: '#AF2A30', // Top rim of the account-created ellipse
+  primaryDeep: '#2E0208', // Outer falloff of the account-created ellipse
 
   secondary: '#2E7D32', // Fresh herb green
   secondaryLight: '#E8F5E9',
@@ -74,9 +76,10 @@ export const spacing = {
 
 export const typography = {
   fontFamily: {
-    regular: 'System',
-    medium: 'System',
-    bold: 'System',
+    sans: 'Assistant-Regular',
+    medium: 'Assistant-Medium',
+    semibold: 'Assistant-SemiBold',
+    display: 'Fondamento-Regular',
   },
   fontSize: {
     xs: 12,
@@ -86,6 +89,7 @@ export const typography = {
     xl: 22,
     xxl: 28,
     hero: 34,
+    display: 40,
   },
   lineHeight: {
     tight: 1.2,
@@ -99,7 +103,45 @@ export const radius = {
   md: 12,
   lg: 16,
   xl: 24,
+  xxl: 56,
   full: 9999,
+};
+
+/**
+ * Pastel background gradients used by <Screen variant="..." />.
+ * Colors reference the palette above so no component hardcodes a hex value.
+ */
+export const gradients = {
+  blue: {
+    colors: [colors.surface, colors.softBlue, colors.periwinkle],
+    locations: [0, 0.5, 1],
+    start: { x: 1, y: 0 },
+    end: { x: 0.15, y: 1 },
+  },
+  onboarding: {
+    colors: [colors.softBlue, colors.softBlue, colors.surface],
+    locations: [0, 0.42, 1],
+    start: { x: 0.1, y: 0 },
+    end: { x: 0, y: 1 },
+  },
+  green: {
+    colors: [colors.surface, colors.mint],
+    locations: [0, 1],
+    start: { x: 0, y: 0 },
+    end: { x: 0.35, y: 1 },
+  },
+  pink: {
+    colors: [colors.surface, colors.blush],
+    locations: [0, 1],
+    start: { x: 0, y: 0 },
+    end: { x: 0.35, y: 1 },
+  },
+  yellow: {
+    colors: [colors.surface, colors.butter],
+    locations: [0, 1],
+    start: { x: 0, y: 0 },
+    end: { x: 0.35, y: 1 },
+  },
 };
 
 export const shadows = {
@@ -131,5 +173,6 @@ export default {
   spacing,
   typography,
   radius,
+  gradients,
   shadows,
 };

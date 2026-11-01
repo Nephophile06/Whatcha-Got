@@ -1,136 +1,140 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Screen, Button } from '../../src/components/ui';
-import { colors, radius, spacing, typography } from '../../src/theme/tokens';
-import ASSETS from '../../src/constants/assets';
+import { View, Text, useWindowDimensions, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Screen, Input, Button } from '../../src/components/ui';
+import { ASSETS } from '../../src/constants/assets';
+import { colors } from '../../src/theme/tokens';
 
 let LottieView;
 try {
   LottieView = require('lottie-react-native').default || require('lottie-react-native');
-} catch (e) {
+} catch (error) {
   LottieView = null;
+}
+
+function BackdropRow({ icon, children }) {
+  return (
+    <View className="mb-lg flex-row items-center">
+      <Image source={icon} contentFit="contain" style={{ width: 34, height: 34 }} />
+      <View className="ml-md flex-1 pr-lg">{children}</View>
+    </View>
+  );
+}
+
+function SignupBackdrop() {
+  return (
+    <View
+      className="flex-1 opacity-40"
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      <View className="flex-row items-start justify-between px-xxl pt-xl">
+        <View className="mt-md pl-lg">
+          <Text className="font-display text-hero text-text-primary">Hello!!</Text>
+          <Image
+            source={ASSETS.illustrations.helloKaomoji}
+            contentFit="contain"
+            style={{ width: 118, height: 25, marginTop: 4 }}
+          />
+        </View>
+        <Image
+          source={ASSETS.illustrations.catChefWhisking}
+          contentFit="contain"
+          style={{ width: 84, height: 108 }}
+        />
+      </View>
+
+      <Text className="mt-xxl px-lg text-center font-sans text-lg leading-6 text-text-primary">
+        {"It's no fun eating alone!\n"}
+        {"We're whisking up something sweet...\n"}
+        {'Sign up so we can taste test together!'}
+      </Text>
+
+      <View className="mt-xl pl-xxl pr-xxl">
+        <BackdropRow icon={ASSETS.illustrations.cuteBunny}>
+          <Input compact placeholder="give yourself a unique username" value="" editable={false} />
+        </BackdropRow>
+        <BackdropRow icon={ASSETS.illustrations.thinkingCat}>
+          <Input compact placeholder="password [minimum 5 char/letter]" value="" editable={false} />
+        </BackdropRow>
+
+        <View className="mt-md items-center">
+          <View className="min-h-[48px] items-center justify-center rounded-md bg-primary px-lg">
+            <Text className="font-sans-medium text-md text-text-inverse">Purr-fect!</Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
 }
 
 export default function AccountCreatedScreen() {
   const router = useRouter();
-  const { email } = useLocalSearchParams();
+  const { height } = useWindowDimensions();
+  const compact = height < 700;
+
+  const bunnySize = compact ? { width: 74, height: 98 } : { width: 96, height: 128 };
 
   return (
-    <Screen style={styles.container}>
-      <View style={styles.content}>
+    <Screen
+      variant="blue"
+      padded={false}
+      edges={['top']}
+      contentContainerClassName="overflow-hidden"
+      statusBarStyle="dark-content"
+    >
+      <SignupBackdrop />
+
+      <View
+        pointerEvents="none"
+        className="absolute overflow-hidden rounded-full"
+        style={{ top: '63%', left: '-50%', width: '200%', aspectRatio: 1 }}
+      >
+        <LinearGradient
+          colors={[colors.primaryGlow, colors.primary, colors.primaryDeep]}
+          locations={[0, 0.22, 0.37]}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </View>
+
+      <View
+        pointerEvents="box-none"
+        className="absolute bottom-0 left-0 right-0 items-center px-lg pt-xs"
+        style={{ top: '63%' }}
+      >
         {LottieView && ASSETS.animations.bunnyAndChicks ? (
-          <View style={styles.animationContainer}>
+          <View style={bunnySize}>
             <LottieView
               source={ASSETS.animations.bunnyAndChicks}
               autoPlay
               loop
-              style={styles.animation}
+              style={{ width: '100%', height: '100%' }}
+              accessibilityLabel="White bunny with chicks"
             />
           </View>
-        ) : (
-          <View style={styles.iconCircle}>
-            <Text style={styles.icon}>🐰</Text>
-          </View>
-        )}
-        <Text style={styles.title}>Whatcha Got? You! ✨</Text>
-        <Text style={styles.subtitle}>Your account is all set & ready for some magic.</Text>
-        <Text style={styles.description}>
-          We've sent a confirmation code to{' '}
-          <Text style={styles.emailHighlight}>{email || 'your email'}</Text>.
-        </Text>
-      </View>
+        ) : null}
 
-      <View style={styles.footer}>
+        <Text className="mt-xs text-center font-display text-lg text-text-inverse">
+          Whatcha Got? You! ✨
+        </Text>
+
+        <Text className="text-center font-sans text-md text-text-inverse">
+          Your account is all set &amp; ready for some magic.
+        </Text>
+
         <Button
           title="take me home"
-          size="lg"
-          variant="primary"
+          variant="light"
+          size="sm"
           onPress={() => router.replace('/(tabs)/home')}
-          style={styles.btn}
-        />
-        <Button
-          title="Verify Code"
-          size="md"
-          variant="outline"
-          onPress={() =>
-            router.push({
-              pathname: '/(auth)/otp',
-              params: { email, from: 'signup' },
-            })
-          }
-          style={styles.btn}
+          className="mt-md"
         />
       </View>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: spacing.lg,
-    justifyContent: 'space-between',
-    paddingVertical: spacing.xl,
-  },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-  },
-  animationContainer: {
-    width: 180,
-    height: 180,
-    marginBottom: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  animation: {
-    width: '100%',
-    height: '100%',
-  },
-  iconCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.lg,
-  },
-  icon: {
-    fontSize: 48,
-  },
-  title: {
-    fontSize: typography.fontSize.xxl,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: typography.fontSize.md,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  description: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  emailHighlight: {
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  footer: {
-    width: '100%',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  btn: {
-    width: '100%',
-  },
-});

@@ -5,6 +5,7 @@ module.exports = {
     "./src/**/*.{js,jsx}",
   ],
   presets: [require("nativewind/preset")],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
@@ -16,6 +17,7 @@ module.exports = {
         mint: '#EAF9D9',
         periwinkle: '#B4CDFF',
         softBlue: '#D9E6FF',
+        black: '#000000',
 
         // Brand Semantic
         brand: {
@@ -74,12 +76,33 @@ module.exports = {
           DEFAULT: '#B91C1C',
           light: '#FEE2E2',
         },
+        info: {
+          DEFAULT: '#1D4ED8',
+          light: '#DBEAFE',
+        },
+      },
+      fontFamily: {
+        sans: ['Assistant-Regular'],
+        'sans-medium': ['Assistant-Medium'],
+        'sans-semibold': ['Assistant-SemiBold'],
+        display: ['Fondamento-Regular'],
+      },
+      fontSize: {
+        xs: ['12px', '16px'],
+        sm: ['14px', '20px'],
+        md: ['16px', '24px'],
+        lg: ['18px', '26px'],
+        xl: ['22px', '28px'],
+        xxl: ['28px', '34px'],
+        hero: ['34px', '40px'],
+        display: ['40px', '48px'],
       },
       borderRadius: {
         sm: '6px',
         md: '12px',
         lg: '16px',
         xl: '24px',
+        xxl: '56px',
         full: '9999px',
       },
       spacing: {
