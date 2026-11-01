@@ -1,90 +1,69 @@
-# Whatcha Got? 🍽️
+# Whatcha Got? - Backend & Database Infrastructure 🗄️
 
-> **A practical, budget-friendly meal discovery and planning mobile experience.**  
-> Built with Expo Router (React Native) & Supabase.
+> **Backend services, PostgreSQL database schema, RLS policies, and Supabase integration.**
 
 ---
 
-## 🌿 Branch Strategy
+## 🏗️ Architecture Overview
 
-This repository is organized into three dedicated branches:
+The backend is built on top of **Supabase (PostgreSQL)**, providing managed authentication, database operations with Row Level Security (RLS), and bucket storage for recipe images.
 
-| Branch | Description | Key Directories |
+### Key Database Tables
+
+| Table | Purpose | Row Level Security (RLS) |
 | :--- | :--- | :--- |
-| **`main`** | Unified production-ready repository with complete frontend, backend schema, and design specs. | `app/`, `src/`, `supabase/`, `design/`, `assets/` |
-| **`frontend`** | Mobile client application focused on UI, screens, state management, and design tokens. | `app/`, `src/components/`, `src/store/`, `src/theme/`, `assets/`, `design/` |
-| **`backend`** | Database schema, migrations, RLS policies, seed data, and Supabase integration services. | `supabase/`, `src/lib/`, `src/services/`, `.env.example` |
+| **`profiles`** | User details, dietary preferences, target daily calories | Public read, user-scoped write/update |
+| **`recipes`** | Community & curated meal recipes, ingredients (JSONB), steps | Public read, author-scoped write/update/delete |
+| **`favorites`** | User-saved recipe bookmarks | Authenticated user-scoped |
+| **`grocery_items`**| Personalized grocery checklist & purchased status | Authenticated user-scoped |
+| **`meal_logs`** | Daily consumed calorie entries & meal times | Authenticated user-scoped |
 
 ---
 
-## 📱 Features
+## 📂 Backend Directory Structure
 
-- **Smart Meal Discovery:** Filter meals by ingredients on hand, cooking time, mood, and budget.
-- **Accessible Design System:** Persistent input labels, high-contrast palette (>= 7.5:1 ratio), action-oriented CTAs.
-- **Interactive Grocery List:** Quick-add ingredients directly from recipes, check-off pantry items.
-- **Calorie & Goal Tracking:** Daily target gauge, quick food logging, and breakdown.
-- **Favorites & Sharing:** Save go-to budget recipes and publish community creations.
-
----
-
-## 🛠️ Tech Stack
-
-- **Framework:** [Expo](https://expo.dev/) (SDK 58) with [Expo Router](https://docs.expo.dev/router/introduction/) (file-based navigation)
-- **UI & Components:** Custom high-contrast accessible component library
-- **State Management:** [Zustand](https://github.com/pmndrs/zustand)
-- **Database & Auth:** [Supabase](https://supabase.com/) (PostgreSQL, Row Level Security, Auth, Storage)
-- **Storage Persistence:** `@react-native-async-storage/async-storage`
-
----
-
-## 🚀 Quick Start
-
-### 1. Install Dependencies
-```bash
-npm install
+```
+├── supabase/
+│   ├── schema.sql        # Full PostgreSQL DDL schema & Row Level Security policies
+│   └── seed.sql          # Seed data for initial budget recipes
+├── src/
+│   ├── lib/
+│   │   └── supabase.js   # Supabase client initialization & session storage
+│   └── services/
+│       ├── auth.js       # SignUp, SignIn, VerifyOTP, ResetPassword, SignOut
+│       ├── recipes.js    # Fetch recipes with filters, recipe details, create recipe
+│       ├── storage.js    # Image uploads and deletions
+│       └── index.js      # Unified service exports
+├── .env.example          # Environment variable template
+├── .gitignore
+└── package.json
 ```
 
-### 2. Environment Variables
+---
+
+## 🚀 Supabase Local Setup & Deployment
+
+### 1. Environment Configuration
 Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
-Add your Supabase project URL and anon public key.
+Fill in your Supabase Project URL and Anon Public Key:
+```env
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-public-key
+```
 
-### 3. Start Development Server
+### 2. Apply Schema via Supabase CLI
 ```bash
-# Start Expo Metro bundler
-npm start
+# Initialize Supabase locally
+npx supabase init
 
-# Run on Android
-npm run android
+# Start local Supabase instance (Docker required)
+npx supabase start
 
-# Run in Web browser
-npm run web
+# Apply schema and seed data
+npx supabase db reset
 ```
 
----
-
-## 📂 Project Structure
-
-```
-├── app/                  # Expo-router screens & routes
-│   ├── _layout.jsx       # Root layout, auth gate & stack
-│   ├── index.jsx         # Redirect logic
-│   ├── (auth)/           # Onboarding, Welcome, Login, Sign Up, OTP
-│   └── (tabs)/           # Home, Calorie, Grocery List, Favorites, Profile
-├── src/
-│   ├── components/       # UI primitives (Button, Input, Toast) & Feature widgets
-│   ├── store/            # Zustand state stores (auth, favorites, grocery, calorie)
-│   ├── lib/              # Supabase client initialization
-│   ├── services/         # Auth, Recipes, and Storage service layer
-│   └── theme/            # Design tokens (colors, typography, spacing, radius)
-├── supabase/             # PostgreSQL database schema, RLS policies, and seed data
-├── assets/               # App icons, splash, fonts, illustrations
-└── design/               # Design tokens guide and screen flow specifications
-```
-
----
-
-## 📄 License
-MIT
+Or copy the contents of `supabase/schema.sql` directly into your Supabase Dashboard **SQL Editor** and run.
