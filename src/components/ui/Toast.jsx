@@ -1,125 +1,113 @@
+/**
+ * Toast — inline feedback banner (toast/banner in one component).
+ *
+ * Props:
+ * - visible: boolean (default true; false renders nothing)
+ * - type: 'success' | 'error' | 'offline' | 'warning' | 'info'
+ * - message: string
+ * - onRetry: optional () => void, renders a "Retry" action for failures
+ * - onDismiss: optional () => void, renders a close button
+ * - className / style
+ *
+ * Message copy uses textPrimary on pastel tints to stay above WCAG AA.
+ */
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors, radius, spacing, typography, shadows } from '../../theme/tokens';
+import { View, Text, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, shadows } from '../../theme/tokens';
+import { cx } from './cx';
 
-export const Toast = ({
-  visible,
-  type = 'info', // 'success' | 'error' | 'warning' | 'info'
+const TYPES = {
+  success: {
+    container: 'border-success bg-success-light',
+    accent: 'text-success',
+    icon: 'checkmark-circle',
+    iconColor: colors.success,
+  },
+  error: {
+    container: 'border-error bg-error-light',
+    accent: 'text-error',
+    icon: 'alert-circle',
+    iconColor: colors.error,
+  },
+  offline: {
+    container: 'border-warning bg-warning-light',
+    accent: 'text-warning',
+    icon: 'cloud-offline-outline',
+    iconColor: colors.warning,
+  },
+  warning: {
+    container: 'border-warning bg-warning-light',
+    accent: 'text-warning',
+    icon: 'warning',
+    iconColor: colors.warning,
+  },
+  info: {
+    container: 'border-info bg-info-light',
+    accent: 'text-info',
+    icon: 'information-circle',
+    iconColor: colors.info,
+  },
+};
+
+export function Toast({
+  visible = true,
+  type = 'info',
   message,
   onRetry,
   onDismiss,
+  className,
   style,
-}) => {
+}) {
   if (!visible || !message) return null;
 
-  const getBackgroundColor = () => {
-    switch (type) {
-      case 'success':
-        return colors.successLight;
-      case 'error':
-        return colors.errorLight;
-      case 'warning':
-        return colors.warningLight;
-      default:
-        return colors.surfaceSubtle;
-    }
-  };
-
-  const getBorderColor = () => {
-    switch (type) {
-      case 'success':
-        return colors.success;
-      case 'error':
-        return colors.error;
-      case 'warning':
-        return colors.warning;
-      default:
-        return colors.border;
-    }
-  };
-
-  const getTextColor = () => {
-    switch (type) {
-      case 'success':
-        return colors.success;
-      case 'error':
-        return colors.error;
-      case 'warning':
-        return colors.warning;
-      default:
-        return colors.textPrimary;
-    }
-  };
+  const tone = TYPES[type] || TYPES.info;
 
   return (
     <View
-      style={[
-        styles.container,
-        { backgroundColor: getBackgroundColor(), borderColor: getBorderColor() },
-        style,
-      ]}
       accessibilityRole="alert"
+      accessibilityLiveRegion="polite"
+      className={cx(
+        'w-full flex-row items-start rounded-md border px-md py-sm',
+        tone.container,
+        className
+      )}
+      style={[shadows.sm, style]}
     >
-      <View style={styles.content}>
-        <Text style={[styles.message, { color: getTextColor() }]}>{message}</Text>
+      <View className="mr-sm pt-xs">
+        <Ionicons name={tone.icon} size={20} color={tone.iconColor} />
       </View>
 
-      <View style={styles.actions}>
+      <Text className="flex-1 py-xs font-sans-medium text-sm text-text-primary">
+        {message}
+      </Text>
+
+      <View className="ml-sm flex-row items-center">
         {onRetry ? (
-          <TouchableOpacity onPress={onRetry} style={styles.actionButton}>
-            <Text style={[styles.actionText, { color: getTextColor() }]}>Retry</Text>
-          </TouchableOpacity>
+          <Pressable
+            onPress={onRetry}
+            accessibilityRole="button"
+            accessibilityLabel="Retry"
+            className="min-h-[44px] justify-center px-sm"
+          >
+            <Text className={cx('font-sans-semibold text-sm', tone.accent)}>Retry</Text>
+          </Pressable>
         ) : null}
+
         {onDismiss ? (
-          <TouchableOpacity onPress={onDismiss} style={styles.actionButton}>
-            <Text style={[styles.dismissText, { color: getTextColor() }]}>✕</Text>
-          </TouchableOpacity>
+          <Pressable
+            onPress={onDismiss}
+            accessibilityRole="button"
+            accessibilityLabel="Dismiss"
+            hitSlop={4}
+            className="h-11 w-11 items-center justify-center"
+          >
+            <Ionicons name="close" size={18} color={colors.textSecondary} />
+          </Pressable>
         ) : null}
       </View>
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    marginVertical: spacing.xs,
-    width: '100%',
-    ...shadows.sm,
-  },
-  content: {
-    flex: 1,
-    marginRight: spacing.sm,
-  },
-  message: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: '600',
-  },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  actionButton: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  actionText: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: '700',
-    textDecorationLine: 'underline',
-  },
-  dismissText: {
-    fontSize: typography.fontSize.md,
-    fontWeight: '700',
-  },
-});
+}
 
 export default Toast;
-

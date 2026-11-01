@@ -1,9 +1,11 @@
 import '../global.css';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
 import { useAuthStore } from '../src/store/authStore';
+import { ASSETS } from '../src/constants/assets';
 import { colors } from '../src/theme/tokens';
 
 // Prevent auto-hiding the splash screen until resources are loaded
@@ -11,17 +13,24 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   const checkSession = useAuthStore((state) => state.checkSession);
+  const [fontsLoaded, fontError] = useFonts(ASSETS.fonts);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
-    async function prepare() {
-      try {
-        await checkSession();
-      } finally {
-        await SplashScreen.hideAsync().catch(() => {});
-      }
-    }
-    prepare();
+    let active = true;
+    checkSession().finally(() => {
+      if (active) setSessionChecked(true);
+    });
+    return () => {
+      active = false;
+    };
   }, [checkSession]);
+
+  useEffect(() => {
+    if ((fontsLoaded || fontError) && sessionChecked) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded, fontError, sessionChecked]);
 
   return (
     <>

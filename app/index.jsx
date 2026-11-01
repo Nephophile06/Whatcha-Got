@@ -1,38 +1,10 @@
-import React, { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuthStore } from '../src/store/authStore';
-import { colors } from '../src/theme/tokens';
+import React from 'react';
+import { Redirect } from 'expo-router';
 
+/**
+ * Phase 2A entry point: the auth flow always starts at onboarding.
+ * The session-aware redirect returns when Supabase auth is wired in Phase 5.
+ */
 export default function Index() {
-  const router = useRouter();
-  const { user, isLoading, hasCompletedOnboarding } = useAuthStore();
-
-  useEffect(() => {
-    if (isLoading) return;
-
-    if (!hasCompletedOnboarding) {
-      router.replace('/(auth)/onboarding');
-    } else if (user) {
-      router.replace('/(tabs)/home');
-    } else {
-      router.replace('/(auth)/welcome');
-    }
-  }, [isLoading, user, hasCompletedOnboarding, router]);
-
-  return (
-    <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color={colors.primary} />
-    </View>
-  );
+  return <Redirect href="/(auth)/onboarding" />;
 }
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
-});
-
