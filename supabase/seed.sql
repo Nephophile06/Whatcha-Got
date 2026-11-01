@@ -45,3 +45,4 @@ VALUES
   'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=600&q=80'
 )
 ON CONFLICT DO NOTHING;
+
