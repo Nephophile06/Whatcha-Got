@@ -8,6 +8,9 @@
  * - error: boolean, applies the error border/background
  * - errorMessage: string shown below the boxes when error is true
  * - autoFocus: focuses the first box on mount
+ * - boxSize / boxHeight: box width and height (default 56)
+ * - gap: space between boxes (default 8)
+ * - bare: removes the outer vertical margin (for Figma-placed rows)
  * - className
  *
  * Behavior: auto-advances on entry, backspace clears the current box then
@@ -16,6 +19,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, TextInput } from 'react-native';
 import { colors } from '../../theme/tokens';
+import { useStage } from '../../lib/stage';
 import { AppText } from './AppText';
 import { cx } from './cx';
 
@@ -31,8 +35,13 @@ export function OtpInput({
   error = false,
   errorMessage,
   autoFocus = false,
+  boxSize = 56,
+  boxHeight = 56,
+  gap = 8,
+  bare = false,
   className,
 }) {
+  const { s } = useStage();
   const [digits, setDigits] = useState(() => toDigits(value, length));
   const [focusedIndex, setFocusedIndex] = useState(autoFocus ? 0 : null);
   const inputRefs = useRef([]);
@@ -87,8 +96,15 @@ export function OtpInput({
   };
 
   return (
-    <View className={cx('my-md w-full items-center', className)}>
-      <View className="w-full flex-row justify-center gap-sm">
+    <View className={cx('w-full items-center', bare ? null : 'my-md', className)}>
+      <View
+        style={{
+          width: '100%',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          gap: s(gap),
+        }}
+      >
         {Array.from({ length }).map((_, index) => (
           <TextInput
             key={index}
@@ -110,14 +126,19 @@ export function OtpInput({
             allowFontScaling={false}
             accessibilityLabel={`Verification digit ${index + 1}`}
             className={cx(
-              'min-h-[56px] max-w-[56px] flex-1 rounded-md border-[1.5px] py-0 text-center font-sans-semibold',
+              'rounded-lg border-[1.5px] py-0 text-center font-sans-semibold',
               error
                 ? 'border-error bg-error-light text-error'
                 : focusedIndex === index
                   ? 'border-primary bg-surface text-text-primary'
                   : 'border-text-muted bg-surface text-text-primary'
             )}
-            style={{ fontSize: 22, lineHeight: 28 }}
+            style={{
+              width: s(boxSize),
+              height: s(boxHeight),
+              fontSize: s(24),
+              lineHeight: s(30),
+            }}
           />
         ))}
       </View>

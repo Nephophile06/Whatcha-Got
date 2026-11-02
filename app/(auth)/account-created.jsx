@@ -1,12 +1,13 @@
 import React from 'react';
-import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Screen, AppText, Input, Button } from '../../src/components/ui';
+import { Screen, Stage, AppText, Button } from '../../src/components/ui';
 import { ASSETS } from '../../src/constants/assets';
-import { useScale } from '../../src/lib/scale';
-import { colors, spacing, DEV_FONT_SCALE } from '../../src/theme/tokens';
+import { colors, spacing } from '../../src/theme/tokens';
+import { useStage } from '../../src/lib/stage';
+import L from '../../src/layouts/account-created';
 
 let LottieView;
 try {
@@ -15,178 +16,245 @@ try {
   LottieView = null;
 }
 
-function BackdropRow({ icon, children }) {
-  return (
-    <View className="mb-lg flex-row items-center">
+/**
+ * The Create Account form, dimmed to 40% and repeated behind the success
+ * panel. Rendered from absolute Figma rects so nothing re-flows.
+ */
+function SignupBackdrop() {
+  const { W, H, fx, fy, s, offsetX } = useStage();
+  const B = L.backdrop;
+
+  const field = (y, icon, placeholder) => (
+    <React.Fragment key={placeholder}>
       <Image
         source={icon}
         contentFit="contain"
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-        style={{ width: 34, height: 34 }}
+        style={{
+          position: 'absolute',
+          left: fx(B.fieldBox.x - B.iconOffset),
+          top: fy(y + (B.fieldBox.h - B.iconSize) / 2),
+          width: s(B.iconSize),
+          height: s(B.iconSize),
+        }}
       />
-      <View className="ml-md flex-1 pr-lg">{children}</View>
-    </View>
+      <View
+        style={{
+          position: 'absolute',
+          left: fx(B.fieldBox.x),
+          top: fy(y),
+          width: fx(B.fieldBox.w),
+          height: s(B.fieldBox.h),
+          justifyContent: 'center',
+          paddingHorizontal: s(12),
+        }}
+        className="rounded-md border-[1.5px] border-border"
+      >
+        <AppText variant="caption" numberOfLines={1} className="text-text-muted">
+          {placeholder}
+        </AppText>
+      </View>
+    </React.Fragment>
   );
-}
 
-function SignupBackdrop() {
   return (
     <View
-      className="flex-1 opacity-40"
       pointerEvents="none"
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
+      style={{
+        position: 'absolute',
+        left: offsetX,
+        top: 0,
+        width: W,
+        height: H,
+        opacity: 0.4,
+      }}
     >
-      <View className="flex-row items-start justify-between px-xl pt-md">
-        <View className="mt-sm">
-          <AppText variant="display" fontSize={34}>
-            Hello!!
-          </AppText>
-          <Image
-            source={ASSETS.illustrations.helloKaomoji}
-            contentFit="contain"
-            style={{ width: 112, height: 24, marginTop: 4 }}
-          />
-        </View>
-        <Image
-          source={ASSETS.illustrations.catChefWhisking}
-          contentFit="contain"
-          style={{ width: 78, height: 96 }}
-        />
-      </View>
+      <AppText
+        variant="display"
+        fontSize={B.hello.size}
+        numberOfLines={1}
+        style={{ position: 'absolute', left: fx(B.hello.x), top: fy(B.hello.y) }}
+      >
+        Hello!!
+      </AppText>
+      <Image
+        source={ASSETS.illustrations.helloKaomoji}
+        contentFit="contain"
+        style={{
+          position: 'absolute',
+          left: fx(B.kaomoji.x),
+          top: fy(B.kaomoji.y),
+          width: s(B.kaomoji.w),
+          height: s(B.kaomoji.h),
+        }}
+      />
+      <Image
+        source={ASSETS.illustrations.catChefWhisking}
+        contentFit="contain"
+        style={{
+          position: 'absolute',
+          left: fx(B.cat.x),
+          top: fy(B.cat.y),
+          width: s(B.cat.w),
+          height: s(B.cat.h),
+        }}
+      />
 
       <AppText
         variant="body"
-        className="mt-lg self-center px-lg text-center text-text-primary"
-        style={{ maxWidth: 330 }}
+        fontSize={B.copy.size}
+        className="text-center text-text-primary"
+        style={{
+          position: 'absolute',
+          left: fx(B.copy.x),
+          top: fy(B.copy.y),
+          width: fx(B.copy.w),
+        }}
       >
         {"It's no fun eating alone! We're whisking up something sweet... Sign up so we can taste test together!"}
       </AppText>
 
-      <View className="mt-xl w-full self-center px-lg" style={{ maxWidth: 330 }}>
-        <BackdropRow icon={ASSETS.illustrations.cuteBunny}>
-          <Input
-            compact
-            placeholder="give yourself a unique username"
-            value=""
-            editable={false}
-            inputStyle={{ fontSize: 12 }}
-          />
-        </BackdropRow>
-        <BackdropRow icon={ASSETS.illustrations.thinkingCat}>
-          <Input
-            compact
-            placeholder="password [minimum 5 char/letter]"
-            value=""
-            editable={false}
-            inputStyle={{ fontSize: 12 }}
-          />
-        </BackdropRow>
+      {field(
+        B.fieldBox.y,
+        ASSETS.illustrations.cuteBunny,
+        'give yourself a unique username'
+      )}
+      {field(
+        B.fieldBox.y + B.fieldStep,
+        ASSETS.illustrations.thinkingCat,
+        'password [minimum 5 char/letter]'
+      )}
 
-        <View className="mt-md items-center">
-          <View className="min-h-[48px] items-center justify-center rounded-md bg-primary px-lg">
-            <AppText variant="button" className="text-text-inverse">
-              Purr-fect!
-            </AppText>
-          </View>
-        </View>
+      <View
+        style={{
+          position: 'absolute',
+          left: fx(B.button.x),
+          top: fy(B.button.y),
+          width: fx(B.button.w),
+          height: s(B.button.h),
+        }}
+        className="items-center justify-center rounded-md bg-primary"
+      >
+        <AppText variant="button" numberOfLines={1} className="text-text-inverse">
+          Purr-fect!
+        </AppText>
       </View>
     </View>
   );
 }
 
 /**
- * Account Created — the red ellipse starts at ~63% of the frame exactly as in
- * design/screens/account-created-successfully.png. The button now routes to the
- * home loading state before the dashboard.
+ * Account Created — a wide burgundy ellipse rises above the dimmed signup form.
+ * The ellipse clips its own gradient (overflow hidden) so Android gets the same
+ * curved dome as the PNG instead of a flat edge.
  */
 export default function AccountCreatedScreen() {
   const router = useRouter();
-  const { isShort } = useScale();
-  const { fontScale } = useWindowDimensions();
-  // Larger text needs more of the frame: raise the success panel so the whole
-  // message and button stay inside the viewport instead of being clipped.
-  const bigText = Math.max(fontScale || 1, DEV_FONT_SCALE) > 1.2;
-  const panelTop = bigText
-    ? isShort
-      ? '49%'
-      : '58%'
-    : isShort
-      ? '58%'
-      : '63%';
+  const { W, H, fy, s, offsetX } = useStage();
+  const domeWidth = s(L.dome.w);
+  const domeHeight = s(L.dome.h);
+
+  const background = (
+    <View style={{ flex: 1 }}>
+      <SignupBackdrop />
+
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          left: offsetX + W / 2 - domeWidth / 2,
+          top: fy(L.dome.y),
+          width: domeWidth,
+          height: domeHeight,
+          borderRadius: domeWidth / 2,
+          overflow: 'hidden',
+        }}
+      >
+        <LinearGradient
+          colors={[colors.primaryGlow, colors.primary, colors.primaryDeep]}
+          locations={[0, 0.22, 0.37]}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={{ flex: 1 }}
+        />
+      </View>
+    </View>
+  );
 
   return (
     <Screen
       variant="blue"
       padded={false}
-      edges={['top']}
-      contentContainerClassName="flex-grow"
+      edges={[]}
       statusBarStyle="dark-content"
     >
-      <SignupBackdrop />
-
-      <View
-        pointerEvents="none"
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-        className="absolute bottom-0 left-0 right-0 top-0 overflow-hidden"
-      >
-        <View
-          className="absolute rounded-full"
-          style={{ top: panelTop, left: '-50%', width: '200%', aspectRatio: 1 }}
-        >
-          <LinearGradient
-            colors={[colors.primaryGlow, colors.primary, colors.primaryDeep]}
-            locations={[0, 0.22, 0.37]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
-        </View>
-      </View>
-
-      <View
-        className="absolute bottom-0 left-0 right-0 items-center px-lg"
-        style={{ top: panelTop, paddingTop: bigText ? spacing.sm : spacing.md }}
-      >
-        {LottieView && ASSETS.animations.bunnyAndChicks ? (
+      <Stage background={background}>
+        <View style={{ width: W, minHeight: H, paddingTop: fy(L.bunny.y) }}>
           <View
-            style={{ width: bigText ? 88 : 96, height: bigText ? 112 : 128 }}
+            style={{
+              alignSelf: 'center',
+              width: s(L.bunny.w),
+              height: s(L.bunny.h),
+            }}
             accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
           >
-            <LottieView
-              source={ASSETS.animations.bunnyAndChicks}
-              autoPlay
-              loop
-              style={{ width: '100%', height: '100%' }}
-              accessibilityLabel="White bunny with chicks"
-            />
+            {LottieView ? (
+              <LottieView
+                source={ASSETS.animations.bunnyAndChicks}
+                autoPlay
+                loop
+                style={{ width: '100%', height: '100%' }}
+                accessibilityLabel="White bunny with chicks"
+              />
+            ) : null}
           </View>
-        ) : null}
 
-        <AppText
-          variant="display"
-          fontSize={20}
-          className="mt-xs text-center text-text-inverse"
-          style={{ marginTop: bigText ? 0 : spacing.xs }}
-        >
-          Whatcha Got? You! ✨
-        </AppText>
+          <AppText
+            variant="display"
+            fontSize={L.title.size}
+            numberOfLines={L.title.lines}
+            adjustsFontSizeToFit
+            minimumFontScale={0.85}
+            className="self-center text-center text-text-inverse"
+            style={{
+              marginTop: Math.max(
+                fy(L.title.y - (L.bunny.y + L.bunny.h)),
+                spacing.xs
+              ),
+              paddingHorizontal: s(16),
+            }}
+          >
+            Whatcha Got? You! ✨
+          </AppText>
 
-        <AppText variant="body" className="text-center text-text-inverse">
-          Your account is all set &amp; ready for some magic.
-        </AppText>
+          <AppText
+            variant="body"
+            fontSize={L.body.size}
+            className="self-center text-center text-text-inverse"
+            style={{
+              marginTop: fy(L.body.y - (L.title.y + L.title.h)),
+              width: s(L.body.w),
+            }}
+          >
+            Your account is all set &amp; ready for some magic.
+          </AppText>
 
-        <Button
-          title="take me home"
-          variant="light"
-          size="sm"
-          onPress={() => router.replace('/home-loading')}
-          className="mt-md"
-          style={{ marginTop: bigText ? spacing.sm : spacing.md }}
-        />
-      </View>
+          <Button
+            title="take me home"
+            variant="light"
+            size="sm"
+            onPress={() => router.replace('/home-loading')}
+            style={{
+              alignSelf: 'center',
+              marginTop: fy(L.button.y - (L.body.y + L.body.h)),
+              minWidth: s(L.button.w),
+              minHeight: s(L.button.h),
+            }}
+          />
+
+          <View style={{ flexGrow: 1, minHeight: s(8) }} />
+        </View>
+      </Stage>
     </Screen>
   );
 }

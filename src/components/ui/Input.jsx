@@ -8,6 +8,9 @@
  * - error: string | boolean; shows the error message and error styling
  * - disabled: boolean, dims the field and blocks editing
  * - compact: boolean, 44px field height and 14px value text (dense forms)
+ * - denseLabel: boolean, 11px label on a 15px line (label + 44px field is the
+ *   57px Figma row step in Account Settings)
+ * - flush: boolean, removes the default bottom margin (fields placed by rect)
  * - secure / secureTextEntry: password mode (adds a show/hide toggle)
  * - showPasswordToggle: override the automatic password toggle
  * - required: boolean, adds a required asterisk
@@ -32,6 +35,8 @@ export function Input({
   helperText,
   disabled = false,
   compact = false,
+  denseLabel = false,
+  flush = false,
   secure = false,
   secureTextEntry = false,
   showPasswordToggle,
@@ -58,12 +63,13 @@ export function Input({
   const isFilled = value !== undefined && value !== null && String(value).length > 0;
 
   return (
-    <View className={cx('mb-md w-full', className)} style={style}>
+    <View className={cx(flush ? 'w-full' : 'mb-md w-full', className)} style={style}>
       {label ? (
         <AppText
           variant="label"
+          fontSize={denseLabel ? 11 : undefined}
           className={cx(
-            'mb-xs',
+            denseLabel ? 'mb-0' : 'mb-xs',
             hasError
               ? 'text-error'
               : disabled
@@ -72,10 +78,15 @@ export function Input({
                   ? 'text-primary'
                   : 'text-text-primary'
           )}
+          style={denseLabel ? { marginBottom: 0, lineHeight: 15 } : undefined}
         >
           {label}
           {required ? (
-            <AppText variant="label" className="text-error">
+            <AppText
+              variant="label"
+              fontSize={denseLabel ? 11 : undefined}
+              className="text-error"
+            >
               {' '}
               *
             </AppText>

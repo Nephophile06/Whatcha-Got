@@ -3,28 +3,35 @@ import { View, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Screen, AppText, Toast } from '../../src/components/ui';
+import { Screen, Stage, AppText, Toast } from '../../src/components/ui';
 import { ASSETS } from '../../src/constants/assets';
 import { useAuthStore } from '../../src/store/authStore';
 import { colors, shadows } from '../../src/theme/tokens';
+import { useStage } from '../../src/lib/stage';
+import L from '../../src/layouts/profile';
 
-function InfoRow({ icon, label, onPress, last = false }) {
+function InfoRow({ icon, label, onPress, last = false, height }) {
+  const { s } = useStage();
+
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      className="min-h-[56px] flex-row items-center px-md py-sm"
-      style={!last ? { borderBottomWidth: 1, borderBottomColor: colors.border } : null}
+      className="flex-row items-center py-sm"
+      style={[
+        { minHeight: s(height), paddingHorizontal: s(36) },
+        !last ? { borderBottomWidth: 1, borderBottomColor: colors.border } : null,
+      ]}
     >
       <Image
         source={icon}
         contentFit="contain"
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
-        style={{ width: 24, height: 24, tintColor: colors.textPrimary }}
+        style={{ width: s(24), height: s(24), tintColor: colors.textPrimary }}
       />
-      <AppText variant="body" fontSize={17} className="ml-md flex-1">
+      <AppText variant="body" fontSize={17} className="flex-1" style={{ marginLeft: s(26) }}>
         {label}
       </AppText>
       <Image
@@ -32,13 +39,15 @@ function InfoRow({ icon, label, onPress, last = false }) {
         contentFit="contain"
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
-        style={{ width: 16, height: 16, tintColor: colors.textPrimary }}
+        style={{ width: s(16), height: s(16), tintColor: colors.textPrimary }}
       />
     </Pressable>
   );
 }
 
-function SectionCard({ children }) {
+function SectionCard({ children, radius }) {
+  const { s } = useStage();
+
   return (
     <View
       className="rounded-lg"
@@ -49,7 +58,7 @@ function SectionCard({ children }) {
         locations={[0, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
-        style={{ borderRadius: 16 }}
+        style={{ borderRadius: s(radius) }}
       >
         {children}
       </LinearGradient>
@@ -57,10 +66,17 @@ function SectionCard({ children }) {
   );
 }
 
+/**
+ * Profile — bands from design/screens/profile.png (back 70, avatar 133,
+ * personal info 236, card 267, account settings 470, card 503). The frame
+ * includes the tab bar, which the navigator renders separately, so the stage
+ * stops at the tab-bar top (803).
+ */
 export default function ProfileScreen() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const { W, fx, fy, s } = useStage();
   const [toast, setToast] = useState(null);
 
   const username = user?.username || 'Nondiní';
@@ -77,88 +93,164 @@ export default function ProfileScreen() {
     <View className="flex-1">
       <Screen
         variant="cream"
-        scroll
         padded={false}
-        contentContainerClassName="pb-xl"
+        edges={[]}
         statusBarStyle="dark-content"
       >
-        <View className="px-md pt-sm">
-          <Pressable
-            onPress={() => router.push('/home-dashboard')}
-            accessibilityRole="button"
-            accessibilityLabel="Back to home"
-            className="h-11 w-11 items-start justify-center"
-          >
-            <Image
-              source={ASSETS.icons.undoBack}
-              contentFit="contain"
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-              style={{ width: 32, height: 32 }}
-            />
-          </Pressable>
-
-          <View className="mt-md flex-row items-center px-sm">
-            <View className="h-[72px] w-[72px] items-center justify-center rounded-full bg-surface">
+        <Stage minHeight={fy(L.tabBarTop)}>
+          <View style={{ width: W, minHeight: fy(L.tabBarTop) }}>
+            <Pressable
+              onPress={() => router.push('/home-dashboard')}
+              accessibilityRole="button"
+              accessibilityLabel="Back to home"
+              className="items-center justify-center"
+              style={{
+                marginTop: fy(L.back.y),
+                marginLeft: fx(L.back.x),
+                width: s(L.back.w),
+                height: s(L.back.h),
+              }}
+            >
               <Image
-                source={ASSETS.icons.customerProfile}
+                source={ASSETS.icons.undoBack}
                 contentFit="contain"
-                accessibilityLabel="Profile avatar"
-                style={{ width: 34, height: 34 }}
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                style={{ width: s(32), height: s(32) }}
               />
+            </Pressable>
+
+            <View
+              className="flex-row items-center"
+              style={{
+                marginTop: fy(L.avatar.y - (L.back.y + L.back.h)),
+                marginLeft: fx(L.avatar.x),
+                marginRight: fx(45),
+              }}
+            >
+              <View
+                className="items-center justify-center rounded-full bg-surface"
+                style={{ width: s(L.avatar.w), height: s(L.avatar.h) }}
+              >
+                <Image
+                  source={ASSETS.icons.customerProfile}
+                  contentFit="contain"
+                  accessibilityLabel="Profile avatar"
+                  style={{ width: s(34), height: s(34) }}
+                />
+              </View>
+              <View style={{ flex: 1, marginLeft: fx(L.name.x - (L.avatar.x + L.avatar.w)) }}>
+                <AppText
+                  variant="display"
+                  fontSize={L.name.size}
+                  numberOfLines={L.name.lines}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.85}
+                >
+                  {username}
+                </AppText>
+                <AppText
+                  variant="body"
+                  fontSize={L.phone.size}
+                  className="text-text-primary"
+                  style={{ marginTop: fy(L.phone.y - (L.name.y + L.name.h)) }}
+                >
+                  {phone}
+                </AppText>
+              </View>
             </View>
-            <View className="ml-lg flex-1">
-              <AppText variant="display" fontSize={28}>
-                {username}
-              </AppText>
-              <AppText variant="body" fontSize={16} className="mt-xs text-text-primary">
-                {phone}
-              </AppText>
+
+            <AppText
+              variant="body"
+              fontSize={L.sectionInfo.size}
+              style={{
+                marginTop: fy(L.sectionInfo.y - (L.avatar.y + L.avatar.h)),
+                marginLeft: fx(L.sectionInfo.x),
+              }}
+            >
+              Personal Information
+            </AppText>
+
+            <View style={{ marginTop: fy(L.card1.y - (L.sectionInfo.y + L.sectionInfo.h)) }}>
+              <View style={{ marginLeft: fx(L.card1.x), width: fx(L.card1.w) }}>
+                <SectionCard radius={L.card1.radius}>
+                  <InfoRow
+                    icon={ASSETS.icons.editPencil}
+                    label="Change Account Info"
+                    onPress={() => router.push('/account-settings')}
+                    height={L.rowH}
+                  />
+                  <InfoRow
+                    icon={ASSETS.icons.forwardArrow}
+                    label="Share Recipe"
+                    onPress={showComingSoon}
+                    height={L.rowH}
+                  />
+                  <InfoRow
+                    icon={ASSETS.icons.targetGoal}
+                    label="Target Calorie"
+                    onPress={showComingSoon}
+                    last
+                    height={L.rowH}
+                  />
+                </SectionCard>
+              </View>
             </View>
+
+            <AppText
+              variant="body"
+              fontSize={L.sectionSettings.size}
+              style={{
+                marginTop: fy(L.sectionSettings.y - (L.card1.y + L.card1.h)),
+                marginLeft: fx(L.sectionSettings.x),
+              }}
+            >
+              Account Settings
+            </AppText>
+
+            <View
+              style={{ marginTop: fy(L.card2.y - (L.sectionSettings.y + L.sectionSettings.h)) }}
+            >
+              <View style={{ marginLeft: fx(L.card2.x), width: fx(L.card2.w) }}>
+                <SectionCard radius={L.card2.radius}>
+                  <InfoRow
+                    icon={ASSETS.icons.settingsSlider}
+                    label="Food Preferences"
+                    onPress={showComingSoon}
+                    height={55}
+                  />
+                  <InfoRow
+                    icon={ASSETS.icons.nightMode}
+                    label="Theme"
+                    onPress={showComingSoon}
+                    height={55}
+                  />
+                  <InfoRow
+                    icon={ASSETS.icons.language}
+                    label="App Language"
+                    onPress={showComingSoon}
+                    height={55}
+                  />
+                  <InfoRow
+                    icon={ASSETS.icons.termsAndConditions}
+                    label="Terms and Conditions"
+                    onPress={showComingSoon}
+                    height={55}
+                  />
+                  <InfoRow
+                    icon={ASSETS.icons.logout}
+                    label="Log Out / Sign Out"
+                    onPress={handleLogout}
+                    last
+                    height={55}
+                  />
+                </SectionCard>
+              </View>
+            </View>
+
+            <View style={{ flexGrow: 1, minHeight: s(8) }} />
           </View>
-
-          <AppText variant="body" fontSize={17} className="mb-sm mt-lg px-sm">
-            Personal Information
-          </AppText>
-          <SectionCard>
-            <InfoRow
-              icon={ASSETS.icons.editPencil}
-              label="Change Account Info"
-              onPress={() => router.push('/account-settings')}
-            />
-            <InfoRow icon={ASSETS.icons.forwardArrow} label="Share Recipe" onPress={showComingSoon} />
-            <InfoRow
-              icon={ASSETS.icons.targetGoal}
-              label="Target Calorie"
-              onPress={showComingSoon}
-              last
-            />
-          </SectionCard>
-
-          <AppText variant="body" fontSize={17} className="mb-sm mt-xl px-sm">
-            Account Settings
-          </AppText>
-          <SectionCard>
-            <InfoRow
-              icon={ASSETS.icons.settingsSlider}
-              label="Food Preferences"
-              onPress={showComingSoon}
-            />
-            <InfoRow icon={ASSETS.icons.nightMode} label="Theme" onPress={showComingSoon} />
-            <InfoRow icon={ASSETS.icons.language} label="App Language" onPress={showComingSoon} />
-            <InfoRow
-              icon={ASSETS.icons.termsAndConditions}
-              label="Terms and Conditions"
-              onPress={showComingSoon}
-            />
-            <InfoRow
-              icon={ASSETS.icons.logout}
-              label="Log Out / Sign Out"
-              onPress={handleLogout}
-              last
-            />
-          </SectionCard>
-        </View>
+        </Stage>
       </Screen>
 
       {toast ? (

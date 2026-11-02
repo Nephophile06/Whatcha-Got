@@ -7,6 +7,13 @@ import { useFonts } from 'expo-font';
 import { useAuthStore } from '../src/store/authStore';
 import { ASSETS } from '../src/constants/assets';
 import { colors } from '../src/theme/tokens';
+import { StageProvider } from '../src/lib/stage';
+
+// Dev-only Figma comparison overlay. Not mounted unless explicitly enabled.
+let DesignOverlay = null;
+if (process.env.EXPO_PUBLIC_DESIGN_OVERLAY === '1') {
+  DesignOverlay = require('../src/dev/DesignOverlay').default;
+}
 
 // Prevent auto-hiding the splash screen until resources are loaded
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -33,7 +40,7 @@ export default function RootLayout() {
   }, [fontsLoaded, fontError, sessionChecked]);
 
   return (
-    <>
+    <StageProvider>
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
@@ -50,23 +57,18 @@ export default function RootLayout() {
         <Stack.Screen
           name="share-recipe"
           options={{
-            headerShown: true,
-            title: 'Share Recipe',
-            headerTintColor: colors.textPrimary,
-            headerStyle: { backgroundColor: colors.surface },
+            headerShown: false,
             presentation: 'modal',
           }}
         />
         <Stack.Screen
           name="target-calorie"
           options={{
-            headerShown: true,
-            title: 'Calorie Target',
-            headerTintColor: colors.textPrimary,
-            headerStyle: { backgroundColor: colors.surface },
+            headerShown: false,
           }}
         />
       </Stack>
-    </>
+      {DesignOverlay ? <DesignOverlay /> : null}
+    </StageProvider>
   );
 }

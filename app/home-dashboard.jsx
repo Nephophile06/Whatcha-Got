@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, TextInput, Pressable } from 'react-native';
 import { Image } from 'expo-image';
-import { Screen, AppText, Button, CategoryTile, Toast } from '../src/components/ui';
+import { Screen, Stage, AppText, Button, CategoryTile, Toast } from '../src/components/ui';
 import { ASSETS } from '../src/constants/assets';
 import { usePreferencesStore } from '../src/store/preferencesStore';
-import { useScale } from '../src/lib/scale';
+import { useStage } from '../src/lib/stage';
 import { colors } from '../src/theme/tokens';
+import L from '../src/layouts/home-dashboard';
 
 const CRAVINGS = [
   { id: 'smoothies', label: 'smoothies', image: ASSETS.images.categories.smoothies },
@@ -23,12 +24,14 @@ const CRAVINGS = [
 ];
 
 /**
- * Home Dashboard — the PNG has no tab bar, so this route lives outside
- * app/(tabs). Selection is kept in preferencesStore; the suggestions screen
- * is not designed yet, so both actions show an info toast.
+ * Home Dashboard — bands from design/screens/home-dashboard.png (hero 44,
+ * title 258, subtitle 300, search 359, grid 443, continue 745, skip 805).
+ * The PNG has no tab bar, so this route lives outside app/(tabs). Selection is
+ * kept in preferencesStore; the suggestions screen is not designed yet, so
+ * both actions show an info toast.
  */
 export default function HomeDashboardScreen() {
-  const { width, height } = useScale();
+  const { W, H, fx, fy, s } = useStage();
   const selectedCategories = usePreferencesStore((state) => state.selectedCategories);
   const toggleCategory = usePreferencesStore((state) => state.toggleCategory);
   const [search, setSearch] = useState('');
@@ -40,31 +43,60 @@ export default function HomeDashboardScreen() {
     <View className="flex-1">
       <Screen
         variant="mintPage"
-        scroll
         padded={false}
-        contentContainerClassName="flex-grow"
+        edges={[]}
         statusBarStyle="dark-content"
       >
-        <View className="w-full self-center" style={{ maxWidth: 480 }}>
-          <Image
-            source={ASSETS.images.cravingsHeroBanner}
-            contentFit="cover"
-            accessibilityLabel="Kitchen table with baking ingredients"
-            style={{ width: '100%', aspectRatio: 412 / 212 }}
-          />
+        <Stage>
+          <View style={{ width: W, minHeight: H }}>
+            <Image
+              source={ASSETS.images.cravingsHeroBanner}
+              contentFit="cover"
+              accessibilityLabel="Kitchen table with baking ingredients"
+              style={{
+                marginTop: fy(L.hero.y),
+                width: W,
+                height: s(L.hero.h),
+              }}
+            />
 
-          <View className="px-lg pt-lg">
-            <AppText variant="display" fontSize={34} className="text-center">
+            <AppText
+              variant="display"
+              fontSize={L.title.size}
+              numberOfLines={L.title.lines}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+              className="text-center"
+              style={{
+                marginTop: fy(L.title.y - (L.hero.y + L.hero.h)),
+                marginLeft: fx(L.title.x),
+                width: fx(L.title.w),
+              }}
+            >
               Tell us what you crave
             </AppText>
 
-            <AppText variant="body" className="mt-xs text-center text-text-primary">
+            <AppText
+              variant="body"
+              fontSize={L.subtitle.size}
+              className="text-center text-text-primary"
+              style={{
+                marginTop: fy(L.subtitle.y - (L.title.y + L.title.h)),
+                marginLeft: fx(L.subtitle.x),
+                width: fx(L.subtitle.w),
+              }}
+            >
               we will suggest that match your vibe
             </AppText>
 
             <View
               className="flex-row items-center rounded-md border-[1.5px] border-text-primary bg-transparent px-md"
-              style={{ minHeight: 52, marginTop: Math.round(height * 0.05) }}
+              style={{
+                marginTop: fy(L.search.y - (L.subtitle.y + L.subtitle.h)),
+                marginLeft: fx(L.search.x),
+                width: fx(L.search.w),
+                minHeight: Math.max(s(L.search.h), 44),
+              }}
             >
               <TextInput
                 value={search}
@@ -72,23 +104,29 @@ export default function HomeDashboardScreen() {
                 placeholder="find something different..."
                 placeholderTextColor={colors.textMuted}
                 selectionColor={colors.primary}
-                accessibilityLabel="Search dishes"
+                accessibilityLabel="Search ingredients"
                 allowFontScaling
                 maxFontSizeMultiplier={1.3}
                 className="flex-1 bg-transparent py-sm font-sans text-md text-text-primary"
+                style={{ minWidth: 0 }}
               />
               <Image
                 source={ASSETS.icons.search}
                 contentFit="contain"
                 accessibilityElementsHidden
                 importantForAccessibility="no-hide-descendants"
-                style={{ width: 24, height: 24, marginLeft: 8 }}
+                style={{ width: s(24), height: s(24), marginLeft: s(8) }}
               />
             </View>
 
             <View
               className="flex-row flex-wrap justify-between"
-              style={{ marginTop: Math.round(height * 0.033), rowGap: 12 }}
+              style={{
+                marginTop: fy(L.grid.y - (L.search.y + L.search.h)),
+                marginLeft: fx(L.grid.x),
+                width: fx(L.grid.w),
+                rowGap: s(12),
+              }}
             >
               {CRAVINGS.map((item) => (
                 <CategoryTile
@@ -98,27 +136,38 @@ export default function HomeDashboardScreen() {
                   tint="mint"
                   selected={selectedCategories.includes(item.id)}
                   onPress={() => toggleCategory(item.id)}
+                  style={{ width: s(L.tile.w), minHeight: s(L.tile.h) }}
                 />
               ))}
             </View>
 
-            <View className="mt-xl items-center">
-              <Button title="continue" size="md" onPress={showComingSoon} />
-              <Pressable
-                onPress={showComingSoon}
-                accessibilityRole="button"
-                accessibilityLabel="Skip for now"
-                className="mt-sm min-h-[44px] items-center justify-center px-md"
-              >
-                <AppText variant="label" fontSize={17} className="text-primary underline">
-                  skip for now
-                </AppText>
-              </Pressable>
-            </View>
+            <Button
+              title="continue"
+              size="md"
+              onPress={showComingSoon}
+              style={{
+                alignSelf: 'center',
+                marginTop: fy(L.continue.y - (L.grid.y + L.grid.h)),
+                minWidth: s(L.continue.w),
+                minHeight: Math.max(s(L.continue.h), 44),
+              }}
+            />
 
-            <View style={{ height: width * 0.08 }} />
+            <Pressable
+              onPress={showComingSoon}
+              accessibilityRole="button"
+              accessibilityLabel="Skip for now"
+              className="items-center justify-center px-md"
+              style={{ alignSelf: 'center', marginTop: fy(L.skip.y - (L.continue.y + L.continue.h)), minHeight: 44 }}
+            >
+              <AppText variant="label" fontSize={L.skip.size} className="text-primary underline">
+                skip for now
+              </AppText>
+            </Pressable>
+
+            <View style={{ flexGrow: 1, minHeight: s(8) }} />
           </View>
-        </View>
+        </Stage>
       </Screen>
 
       {toast ? (
