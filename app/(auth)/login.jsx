@@ -2,27 +2,27 @@ import React, { useState } from 'react';
 import { View, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { Screen, AppText, Input, Button, Toast } from '../../src/components/ui';
+import { Screen, Stage, AppText, Input, Button, Toast } from '../../src/components/ui';
 import { ASSETS } from '../../src/constants/assets';
 import { useAuthStore } from '../../src/store/authStore';
-import { useScale } from '../../src/lib/scale';
+import { useStage } from '../../src/lib/stage';
+import L from '../../src/layouts/login';
 
 /**
- * Login — proportions from design/screens/login.png. The PNG labels the first
- * field "your sweet username"; we use an Email label because the future
- * Supabase flow is email + password (reported as a deliberate mismatch).
+ * Login — bands from design/screens/login.png (title 150, copy 210, form 273,
+ * forgot 441, CTA 497, divider 561, Google 594, create-account 634, duck 676).
+ * The PNG labels the first field "your sweet username"; we use an Email label
+ * because the future Supabase flow is email + password.
  */
 export default function LoginScreen() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
-  const { width, height } = useScale();
+  const { W, H, fx, fy, s } = useStage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
-
-  const formWidth = Math.min(width * 0.84, 360);
 
   const clearError = (field) =>
     setErrors((current) => (current[field] ? { ...current, [field]: null } : current));
@@ -65,164 +65,207 @@ export default function LoginScreen() {
     >
       <Screen
         variant="mintPage"
-        scroll
         padded={false}
-        contentContainerClassName="flex-grow"
+        edges={[]}
         statusBarStyle="dark-content"
       >
-        <View className="relative flex-1 px-xl">
-          <Image
-            source={ASSETS.images.twoCherries}
-            contentFit="contain"
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-            className="absolute"
-            style={{
-              position: 'absolute',
-              left: -8,
-              top: 0,
-              width: '30%',
-              aspectRatio: 450 / 336,
-            }}
-          />
-          <Image
-            source={ASSETS.images.peeledBanana}
-            contentFit="contain"
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-            className="absolute"
-            style={{
-              position: 'absolute',
-              right: -14,
-              top: -6,
-              width: '26%',
-              aspectRatio: 358 / 599,
-            }}
-          />
-
-          <AppText
-            variant="display"
-            fontSize={38}
-            style={{ marginTop: Math.round(height * 0.15) }}
-          >
-            Welcome Back!
-          </AppText>
-
-          <AppText
-            variant="body"
-            fontSize={17}
-            className="mt-md text-text-primary"
-            style={{ maxWidth: Math.min(width * 0.82, 340) }}
-          >
-            We missed you :( Let's get back into your world of flavors.
-          </AppText>
-
-          <View className="mt-lg w-full self-center" style={{ maxWidth: formWidth }}>
-            <Input
-              compact
-              label="Email"
-              placeholder="your sweet email"
-              value={email}
-              onChangeText={(value) => {
-                setEmail(value);
-                clearError('email');
+        <Stage>
+          <View style={{ width: W, minHeight: H }}>
+            <Image
+              source={ASSETS.images.twoCherries}
+              contentFit="contain"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={{
+                position: 'absolute',
+                left: fx(L.cherries.x),
+                top: fy(L.cherries.y),
+                width: s(L.cherries.w),
+                height: s(L.cherries.h),
               }}
-              error={errors.email}
-              keyboardType="email-address"
-              autoComplete="email"
-              textContentType="emailAddress"
-              outsideIcon={
-                <Image
-                  source={ASSETS.illustrations.cuteBunny}
-                  contentFit="contain"
-                  accessibilityElementsHidden
-                  importantForAccessibility="no-hide-descendants"
-                  style={{ width: 34, height: 34 }}
-                />
-              }
             />
-
-            <Input
-              compact
-              label="Password"
-              placeholder="secret password ^_^"
-              value={password}
-              onChangeText={(value) => {
-                setPassword(value);
-                clearError('password');
+            <Image
+              source={ASSETS.images.peeledBanana}
+              contentFit="contain"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={{
+                position: 'absolute',
+                left: fx(L.banana.x),
+                top: fy(L.banana.y),
+                width: s(L.banana.w),
+                height: s(L.banana.h),
               }}
-              error={errors.password}
-              secure
-              autoComplete="current-password"
-              textContentType="password"
-              outsideIcon={
-                <Image
-                  source={ASSETS.illustrations.thinkingCat}
-                  contentFit="contain"
-                  accessibilityElementsHidden
-                  importantForAccessibility="no-hide-descendants"
-                  style={{ width: 30, height: 30 }}
-                />
-              }
             />
 
-            <Pressable
-              onPress={() => router.push('/(auth)/forgot-password')}
-              accessibilityRole="link"
-              accessibilityLabel="I forgot my password"
-              className="min-h-[44px] items-end justify-center"
-            >
-              <AppText variant="label" className="text-text-secondary underline">
-                I forgot my password T.T
+            <View style={{ paddingTop: fy(L.title.y), paddingLeft: fx(L.title.x) }}>
+              <AppText
+                variant="display"
+                fontSize={L.title.size}
+                numberOfLines={L.title.lines}
+                adjustsFontSizeToFit
+                minimumFontScale={0.85}
+                style={{ width: fx(L.title.w) }}
+              >
+                Welcome Back!
               </AppText>
-            </Pressable>
-
-            <Button
-              title="Hurryyy!"
-              size="md"
-              loading={loading}
-              onPress={handleLogin}
-              className="mt-md"
-            />
-
-            <View className="mt-lg flex-row items-center">
-              <View className="h-px flex-1 bg-text-muted opacity-40" />
-              <AppText variant="body" className="mx-md text-text-muted">
-                or
-              </AppText>
-              <View className="h-px flex-1 bg-text-muted opacity-40" />
             </View>
 
-            <Button
-              title="login with google"
-              variant="google"
-              size="sm"
-              onPress={() => setToast({ type: 'info', message: 'Coming soon' })}
-              className="mt-md"
+            <AppText
+              variant="body"
+              fontSize={L.copy.size}
+              className="text-text-primary"
+              style={{
+                marginTop: fy(L.copy.y - (L.title.y + L.title.h)),
+                marginLeft: fx(L.copy.x),
+                width: fx(L.copy.w),
+              }}
+            >
+              {"We missed you :(\nLet's get back into your world of flavors."}
+            </AppText>
+
+            <View
+              style={{
+                marginTop: fy(L.form.y - (L.copy.y + L.copy.h)),
+                marginLeft: fx(L.form.x),
+                width: fx(L.form.w),
+              }}
+            >
+              <Input
+                compact
+                label="Email"
+                placeholder="your sweet email"
+                value={email}
+                onChangeText={(value) => {
+                  setEmail(value);
+                  clearError('email');
+                }}
+                error={errors.email}
+                keyboardType="email-address"
+                autoComplete="email"
+                textContentType="emailAddress"
+                outsideIcon={
+                  <Image
+                    source={ASSETS.illustrations.cuteBunny}
+                    contentFit="contain"
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
+                    style={{ width: s(34), height: s(34) }}
+                  />
+                }
+              />
+
+              <Input
+                compact
+                label="Password"
+                placeholder="secret password ^_^"
+                value={password}
+                onChangeText={(value) => {
+                  setPassword(value);
+                  clearError('password');
+                }}
+                error={errors.password}
+                secure
+                autoComplete="current-password"
+                textContentType="password"
+                outsideIcon={
+                  <Image
+                    source={ASSETS.illustrations.thinkingCat}
+                    contentFit="contain"
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
+                    style={{ width: s(30), height: s(30) }}
+                  />
+                }
+              />
+
+              <Pressable
+                onPress={() => router.push('/(auth)/forgot-password')}
+                accessibilityRole="link"
+                accessibilityLabel="I forgot my password"
+                className="justify-start"
+                style={{ minHeight: Math.max(s(44), 44), alignItems: 'flex-end' }}
+              >
+                <AppText variant="label" fontSize={L.forgot.size} className="text-text-secondary underline">
+                  I forgot my password T.T
+                </AppText>
+              </Pressable>
+
+              <Button
+                title="Hurryyy!"
+                size="md"
+                loading={loading}
+                onPress={handleLogin}
+                style={{
+                  alignSelf: 'center',
+                  marginTop: fy(L.button.y - (L.forgot.y + 44)),
+                  minWidth: s(L.button.w),
+                  minHeight: Math.max(s(L.button.h), 44),
+                }}
+              />
+
+              <View
+                style={{
+                  marginTop: fy(L.divider.y - (L.button.y + L.button.h)),
+                  width: fx(L.divider.w),
+                  minHeight: fy(L.divider.rowH),
+                  alignSelf: 'center',
+                }}
+                className="flex-row items-center"
+              >
+                <View className="h-px flex-1 bg-text-muted opacity-40" />
+                <AppText variant="body" className="mx-md text-text-muted">
+                  or
+                </AppText>
+                <View className="h-px flex-1 bg-text-muted opacity-40" />
+              </View>
+
+              <Button
+                title="login with google"
+                variant="google"
+                size="sm"
+                onPress={() => setToast({ type: 'info', message: 'Coming soon' })}
+                style={{
+                  alignSelf: 'center',
+                  marginTop: fy(L.google.y - (L.divider.y + L.divider.rowH)),
+                  minWidth: s(L.google.w),
+                  minHeight: Math.max(s(L.google.h), 44),
+                }}
+              />
+
+              <Pressable
+                onPress={() => router.push('/(auth)/create-account')}
+                accessibilityRole="link"
+                accessibilityLabel="New here? Create an account"
+                className="items-center justify-center"
+                style={{ marginTop: fy(L.createAccount.y - (L.google.y + 44)), minHeight: 44 }}
+              >
+                <AppText
+                  variant="label"
+                  fontSize={L.createAccount.size}
+                  className="text-text-secondary underline"
+                >
+                  New here? Create an account
+                </AppText>
+              </Pressable>
+            </View>
+
+            <Image
+              source={ASSETS.illustrations.loginChefCat}
+              contentFit="contain"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={{
+                marginTop: fy(L.duck.y - (L.createAccount.y + 44)),
+                marginLeft: fx(L.duck.x),
+                width: s(L.duck.w),
+                height: s(L.duck.h),
+              }}
             />
 
-            <Pressable
-              onPress={() => router.push('/(auth)/create-account')}
-              accessibilityRole="link"
-              accessibilityLabel="New here? Create an account"
-              className="mt-sm min-h-[44px] items-center justify-center"
-            >
-              <AppText variant="label" className="text-text-secondary underline">
-                New here? Create an account
-              </AppText>
-            </Pressable>
+            <View style={{ flexGrow: 1, minHeight: s(8) }} />
           </View>
-
-          {/* Chef cat sits below the form, like the PNG. */}
-          <Image
-            source={ASSETS.illustrations.loginChefCat}
-            contentFit="contain"
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-            className="mt-md self-start"
-            style={{ width: '34%', aspectRatio: 639 / 666 }}
-          />
-        </View>
+        </Stage>
       </Screen>
 
       {toast ? (

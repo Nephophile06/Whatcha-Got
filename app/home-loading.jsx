@@ -2,9 +2,10 @@ import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { Screen } from '../src/components/ui';
+import { Screen, Stage } from '../src/components/ui';
 import { ASSETS } from '../src/constants/assets';
-import { useScale } from '../src/lib/scale';
+import { useStage } from '../src/lib/stage';
+import L from '../src/layouts/home-loading';
 
 /**
  * Home Loading — shown for ~1.2s after login / account creation / OTP success.
@@ -12,7 +13,7 @@ import { useScale } from '../src/lib/scale';
  */
 export default function HomeLoadingScreen() {
   const router = useRouter();
-  const { width, height } = useScale();
+  const { W, H, fx, fy, s } = useStage();
 
   useEffect(() => {
     const timeout = setTimeout(() => router.replace('/home-dashboard'), 1200);
@@ -20,21 +21,27 @@ export default function HomeLoadingScreen() {
   }, [router]);
 
   return (
-    <Screen variant="mintPage" padded={false} statusBarStyle="dark-content">
-      <View
-        className="flex-1 items-center justify-center"
-        style={{ paddingBottom: Math.round(height * 0.1) }}
-        accessibilityRole="progressbar"
-        accessibilityLabel="Loading your kitchen"
-      >
-        <Image
-          source={ASSETS.images.loginBadge}
-          contentFit="contain"
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          style={{ width: Math.min(width * 0.55, 225), aspectRatio: 1 }}
-        />
-      </View>
+    <Screen variant="mintPage" padded={false} edges={[]} statusBarStyle="dark-content">
+      <Stage>
+        <View
+          style={{ width: W, minHeight: H }}
+          accessibilityRole="progressbar"
+          accessibilityLabel="Loading your kitchen"
+        >
+          <Image
+            source={ASSETS.images.loginBadge}
+            contentFit="contain"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            style={{
+              marginTop: fy(L.cup.y),
+              marginLeft: fx(L.cup.x),
+              width: s(L.cup.w),
+              height: s(L.cup.h),
+            }}
+          />
+        </View>
+      </Stage>
     </Screen>
   );
 }

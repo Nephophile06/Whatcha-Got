@@ -3,22 +3,25 @@ import { View, Pressable } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Screen, AppText, OtpInput, Button } from '../../src/components/ui';
+import { Screen, Stage, AppText, OtpInput, Button } from '../../src/components/ui';
 import { ASSETS } from '../../src/constants/assets';
-import { colors, radius } from '../../src/theme/tokens';
-import { useScale } from '../../src/lib/scale';
+import { colors } from '../../src/theme/tokens';
+import { useStage } from '../../src/lib/stage';
+import L from '../../src/layouts/otp';
 
 const RESEND_SECONDS = 30;
 
 /**
  * OTP Verification — 5 digits, mock rule "12345" succeeds.
  * Error state can be opened directly with /(auth)/otp?state=error and is also
- * entered whenever the code is wrong. Resend uses a 30s mock cooldown.
+ * entered whenever the code is wrong. The burgundy error panel is a wide
+ * ellipse (same construction as Account Created) so its top edge is curved.
+ * Resend uses a 30s mock cooldown.
  */
 export default function OtpScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { width, height } = useScale();
+  const { W, H, fx, fy, s, offsetX } = useStage();
   const [code, setCode] = useState('');
   const [error, setError] = useState(params.state === 'error');
   const [attempt, setAttempt] = useState(0);
@@ -60,138 +63,191 @@ export default function OtpScreen() {
     handleTryAgain();
   };
 
+  const panelWidth = s(L.errorPanel.w);
+  const panelHeight = s(L.errorPanel.h);
+
+  const background = error ? (
+    <View style={{ flex: 1 }}>
+      <View
+        style={{
+          position: 'absolute',
+          left: offsetX + W / 2 - panelWidth / 2,
+          top: fy(L.errorPanel.y),
+          width: panelWidth,
+          height: panelHeight,
+          borderRadius: s(L.errorPanel.radius),
+          overflow: 'hidden',
+        }}
+      >
+        <LinearGradient
+          colors={[colors.primaryGlow, colors.primary, colors.primaryDeep]}
+          locations={[0, 0.18, 0.44]}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={{ flex: 1 }}
+        />
+      </View>
+    </View>
+  ) : null;
+
   return (
     <Screen
       variant="otp"
-      scroll
       padded={false}
-      contentContainerClassName="flex-grow"
+      edges={[]}
       statusBarStyle="dark-content"
     >
-      <View className="relative flex-1 px-xl">
-        <View className="items-center" style={{ paddingTop: Math.round(height * 0.075) }}>
+      <Stage background={background}>
+        <View style={{ width: W, minHeight: H }}>
           <Image
             source={ASSETS.illustrations.imposterDetective}
             contentFit="contain"
             accessibilityLabel="Bear holding a cookie"
-            style={{ width: Math.round(width * 0.31), aspectRatio: 143 / 153 }}
+            style={{
+              marginTop: fy(L.bear.y),
+              marginLeft: fx(L.bear.x),
+              width: s(L.bear.w),
+              height: s(L.bear.h),
+            }}
           />
 
           <AppText
             variant="display"
-            fontSize={26}
-            className={error ? 'mt-lg text-center text-text-secondary' : 'mt-lg text-center'}
+            fontSize={L.title.size}
+            numberOfLines={L.title.lines}
+            adjustsFontSizeToFit
+            minimumFontScale={0.85}
+            className={
+              error
+                ? 'text-center text-text-secondary'
+                : 'text-center text-text-primary'
+            }
+            style={{
+              marginTop: fy(L.title.y - (L.bear.y + L.bear.h)),
+              alignSelf: 'center',
+              paddingHorizontal: s(12),
+            }}
           >
             Are you an Imposter?👀
           </AppText>
 
           <AppText
             variant="body"
-            className="mt-xs text-center text-text-secondary"
-            style={{ maxWidth: Math.min(width * 0.86, 360) }}
+            fontSize={L.copy.size}
+            className="text-center text-text-secondary"
+            style={{
+              marginTop: fy(L.copy.y - (L.title.y + L.title.h)),
+              marginLeft: fx(L.copy.x),
+              width: fx(L.copy.w),
+            }}
           >
             Just kidding! But let's be safe. Drop the magic and enter it below to verify.
           </AppText>
-        </View>
 
-        <View className="mt-xl items-center">
-          <OtpInput
-            key={attempt}
-            length={5}
-            value={code}
-            onChange={setCode}
-            autoFocus
-            error={false}
-          />
-        </View>
-
-        {!error ? (
-          <View className="items-center">
-            <Button
-              title="confirm"
-              size="md"
-              onPress={handleConfirm}
-              loading={verifying}
-              style={{ marginTop: Math.round(height * 0.07) }}
+          <View style={{ marginTop: fy(L.boxes.y - (L.copy.y + L.copy.h)) }}>
+            <OtpInput
+              key={attempt}
+              length={5}
+              value={code}
+              onChange={setCode}
+              autoFocus
+              error={false}
+              bare
+              boxSize={L.boxes.box}
+              boxHeight={L.boxes.h}
+              gap={L.boxes.gap}
             />
+          </View>
 
-            <Pressable
-              onPress={handleResend}
-              disabled={seconds > 0}
-              accessibilityRole="button"
-              accessibilityLabel="Resend verification code"
-              accessibilityState={{ disabled: seconds > 0 }}
-              className="mt-md min-h-[44px] items-center justify-center px-md"
-            >
-              <AppText
-                variant="label"
-                className={seconds > 0 ? 'text-text-muted' : 'text-text-secondary'}
+          {!error ? (
+            <>
+              <Button
+                title="confirm"
+                size="md"
+                onPress={handleConfirm}
+                loading={verifying}
+                style={{
+                  alignSelf: 'center',
+                  marginTop: fy(L.confirm.y - (L.boxes.y + L.boxes.h)),
+                  minWidth: s(L.confirm.w),
+                  minHeight: Math.max(s(L.confirm.h), 44),
+                }}
+              />
+
+              <Pressable
+                onPress={handleResend}
+                disabled={seconds > 0}
+                accessibilityRole="button"
+                accessibilityLabel="Resend verification code"
+                accessibilityState={{ disabled: seconds > 0 }}
+                className="items-center justify-center px-md"
+                style={{ marginTop: fy(L.resend.y - (L.confirm.y + 44)), minHeight: 44 }}
               >
-                Didn't get magic?{' '}
                 <AppText
                   variant="label"
-                  className={
-                    seconds > 0 ? 'text-text-muted' : 'text-text-secondary underline'
-                  }
+                  fontSize={L.resend.size}
+                  className={seconds > 0 ? 'text-text-muted' : 'text-text-secondary'}
                 >
-                  {seconds > 0 ? `try again in ${seconds}s` : 'try again'}
+                  Didn't get magic?{' '}
+                  <AppText
+                    variant="label"
+                    fontSize={L.resend.size}
+                    className={
+                      seconds > 0 ? 'text-text-muted' : 'text-text-secondary underline'
+                    }
+                  >
+                    {seconds > 0 ? `try again in ${seconds}s` : 'try again'}
+                  </AppText>
                 </AppText>
+              </Pressable>
+
+              <Image
+                source={ASSETS.illustrations.catPawPrints}
+                contentFit="contain"
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                style={{
+                  marginTop: fy(L.paws.y - (L.resend.y + 44)),
+                  marginLeft: fx(L.paws.x),
+                  width: s(L.paws.w),
+                  height: s(L.paws.h),
+                }}
+              />
+            </>
+          ) : (
+            <>
+              <AppText
+                variant="body"
+                fontSize={L.errorText.size}
+                className="text-center text-text-inverse"
+                style={{
+                  marginTop: fy(L.errorText.y - (L.boxes.y + L.boxes.h)),
+                  marginLeft: fx(L.errorText.x),
+                  width: fx(L.errorText.w),
+                }}
+              >
+                Uh-oh! Caught You! That's exactly what an imposter would say. Double-check
+                your magic!
               </AppText>
-            </Pressable>
-          </View>
-        ) : null}
 
-        <View className="flex-1" />
+              <Button
+                title="Try again"
+                variant="light"
+                size="md"
+                onPress={handleTryAgain}
+                style={{
+                  alignSelf: 'center',
+                  marginTop: fy(L.errorButton.y - (L.errorText.y + L.errorText.h)),
+                  minWidth: s(L.errorButton.w),
+                  minHeight: Math.max(s(L.errorButton.h), 44),
+                }}
+              />
+            </>
+          )}
 
-        {!error ? (
-          <View
-            className="items-center"
-            style={{ marginBottom: Math.round(height * 0.11) }}
-          >
-            <Image
-              source={ASSETS.illustrations.catPawPrints}
-              contentFit="contain"
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-              style={{ width: '30%', aspectRatio: 148 / 250 }}
-            />
-          </View>
-        ) : null}
-      </View>
-
-      {error ? (
-        <View
-          className="absolute bottom-0 left-0 right-0 overflow-hidden"
-          style={{ top: '57%', borderTopLeftRadius: radius.xxl, borderTopRightRadius: radius.xxl }}
-        >
-          <LinearGradient
-            colors={[colors.primaryGlow, colors.primary, colors.primaryDeep]}
-            locations={[0, 0.3, 0.85]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              paddingHorizontal: 32,
-              paddingBottom: Math.round(height * 0.055),
-            }}
-          >
-            <AppText variant="body" fontSize={17} className="text-center text-text-inverse">
-              Uh-oh! Caught You! That's exactly what an imposter would say. Double-check your
-              magic!
-            </AppText>
-
-            <Button
-              title="try again :("
-              variant="light"
-              size="md"
-              onPress={handleTryAgain}
-              className="mt-xl"
-            />
-          </LinearGradient>
+          <View style={{ flexGrow: 1, minHeight: s(8) }} />
         </View>
-      ) : null}
+      </Stage>
     </Screen>
   );
 }

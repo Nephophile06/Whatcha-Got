@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { View, Pressable, useWindowDimensions } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { Screen, AppText, Button } from '../../src/components/ui';
+import { Screen, Stage, AppText, Button } from '../../src/components/ui';
 import { ASSETS } from '../../src/constants/assets';
-import { colors, shadows, spacing, DEV_FONT_SCALE } from '../../src/theme/tokens';
-import { useScale } from '../../src/lib/scale';
+import { colors, shadows } from '../../src/theme/tokens';
+import { useStage } from '../../src/lib/stage';
+import L from '../../src/layouts/forgot-password';
 
 let LottieView;
 try {
@@ -16,6 +17,8 @@ try {
 }
 
 function MethodCard({ selected, disabled, title, description, icon, onPress, badge }) {
+  const { s } = useStage();
+
   return (
     <Pressable
       onPress={onPress}
@@ -27,7 +30,7 @@ function MethodCard({ selected, disabled, title, description, icon, onPress, bad
       style={[
         shadows.sm,
         {
-          minHeight: 84,
+          minHeight: s(90),
           borderColor: selected ? colors.primary : colors.rose,
           backgroundColor: selected ? colors.primaryBlush : colors.surface,
           opacity: disabled ? 0.55 : 1,
@@ -64,77 +67,115 @@ function MethodCard({ selected, disabled, title, description, icon, onPress, bad
 }
 
 /**
- * Forgot Password — proportions from design/screens/forgot-password.png.
+ * Forgot Password — bands from design/screens/forgot-password.png (title 97,
+ * copy 162, prompt 245, cards 281 / 394, check 540, bunny 664).
  * "Send to Email" is selectable; "Send to Phone" stays visible but disabled
  * until a phone provider exists.
  */
 export default function ForgotPasswordScreen() {
   const router = useRouter();
-  const { width, height } = useScale();
-  const { fontScale } = useWindowDimensions();
-  const bigText = Math.max(fontScale || 1, DEV_FONT_SCALE) > 1.2;
+  const { W, H, fx, fy, s, offsetX } = useStage();
   const [method, setMethod] = useState('email');
+
+  // Decorative blob lives in the clipped background layer: it must never add
+  // scroll height or overflow the canvas.
+  const background = (
+    <View
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      className="absolute rounded-full bg-rose"
+      style={{
+        left: offsetX + fx(L.roseBlob.x),
+        top: fy(L.roseBlob.y),
+        width: s(L.roseBlob.w),
+        height: s(L.roseBlob.h),
+        opacity: 0.5,
+      }}
+    />
+  );
 
   return (
     <Screen
       variant="mintPage"
-      scroll
       padded={false}
-      contentContainerClassName="flex-grow"
+      edges={[]}
       statusBarStyle="dark-content"
     >
-      <View className="relative flex-1">
-        <View
-          pointerEvents="none"
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          className="absolute rounded-full bg-rose"
-          style={{ left: '-12%', top: '66%', width: '120%', aspectRatio: 1, opacity: 0.5 }}
-        />
+      <Stage background={background}>
+        <View style={{ width: W, minHeight: H }}>
+          <Image
+            source={ASSETS.images.forgotPasswordBadge}
+            contentFit="contain"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            style={{
+              position: 'absolute',
+              left: fx(L.broccoli.x),
+              top: fy(L.broccoli.y),
+              width: s(L.broccoli.w),
+              height: s(L.broccoli.h),
+            }}
+          />
 
-        <Image
-          source={ASSETS.images.forgotPasswordBadge}
-          contentFit="contain"
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          className="absolute"
-          style={{
-            position: 'absolute',
-            left: '-4%',
-            top: '1%',
-            width: '33%',
-            aspectRatio: 142 / 163,
-          }}
-        />
-
-        <View
-          className="px-xl"
-          style={{ paddingTop: width * (bigText ? 0.13 : 0.19) }}
-        >
-          <View style={{ paddingLeft: '35%' }}>
-            <AppText variant="display" fontSize={26}>
-              Need a little help
-            </AppText>
-            <AppText variant="display" fontSize={26}>
-              Getting Back?
+          <View
+            style={{
+              paddingTop: fy(L.title.y),
+              paddingLeft: fx(L.title.x),
+              width: fx(L.title.x + L.title.w),
+            }}
+          >
+            <AppText
+              variant="display"
+              fontSize={L.title.size}
+              numberOfLines={L.title.lines}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+              style={{ lineHeight: s(24) }}
+            >
+              {"Need a little help\nGetting Back?"}
             </AppText>
 
-            <AppText variant="body" fontSize={16} className="mt-md text-text-primary">
-              It happens to all of us! Don't worry we'll send a magic ^_^
+            <AppText
+              variant="body"
+              fontSize={L.copy.size}
+              className="text-text-primary"
+              style={{
+                marginTop: fy(L.copy.y - (L.title.y + L.title.h)),
+                width: fx(L.copy.w),
+              }}
+            >
+              {"It happens to all of us!\nDon't worry we'll send a magic ^_^"}
             </AppText>
           </View>
 
-          <AppText variant="body" fontSize={17} className="mt-xl text-text-primary">
+          <AppText
+            variant="body"
+            fontSize={L.choose.size}
+            className="text-text-primary"
+            style={{
+              marginTop: fy(L.choose.y - (L.copy.y + L.copy.h)),
+              marginLeft: fx(L.choose.x),
+              width: fx(L.choose.w),
+            }}
+          >
             Choose where you'd like to receive:
           </AppText>
 
-          <View style={{ marginTop: spacing.md, rowGap: bigText ? spacing.md : spacing.lg }}>
+          <View
+            style={{
+              marginTop: fy(L.emailCard.y - (L.choose.y + L.choose.h)),
+              marginLeft: fx(L.emailCard.x),
+              width: fx(L.emailCard.w),
+              rowGap: s(L.phoneCard.y - (L.emailCard.y + L.emailCard.h)),
+            }}
+          >
             <MethodCard
               selected={method === 'email'}
               title="Send to Email"
               description="Send a 6-digit magic OTP to your registered email."
               onPress={() => setMethod('email')}
-              icon={<Ionicons name="mail-outline" size={38} color={colors.primaryLight} />}
+              icon={<Ionicons name="mail-outline" size={s(38)} color={colors.primaryLight} />}
             />
 
             <MethodCard
@@ -144,47 +185,48 @@ export default function ForgotPasswordScreen() {
               title="Send to Phone"
               description="Send a quick SMS OTP right to your phone number."
               onPress={() => {}}
-              icon={<Ionicons name="call" size={36} color={colors.info} />}
+              icon={<Ionicons name="call" size={s(36)} color={colors.info} />}
             />
           </View>
 
-          <View
-            className="items-start"
-            style={{ marginTop: bigText ? spacing.md : Math.round(height * 0.045) }}
-          >
-            <Button
-              title="check"
-              size="md"
-              onPress={() => router.push('/(auth)/otp')}
-              style={{ alignSelf: 'flex-start' }}
-            />
-          </View>
+          <Button
+            title="check"
+            size="md"
+            onPress={() => router.push('/(auth)/otp')}
+            style={{
+              alignSelf: 'flex-start',
+              marginTop: fy(L.check.y - (L.phoneCard.y + L.phoneCard.h)),
+              marginLeft: fx(L.check.x),
+              minWidth: s(L.check.w),
+              minHeight: Math.max(s(L.check.h), 44),
+            }}
+          />
 
           <View
             pointerEvents="none"
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
-            style={{ height: width * 0.58 }}
-          />
-        </View>
+            style={{
+              marginTop: fy(L.bunny.y - (L.check.y + L.check.h)),
+              marginLeft: fx(L.bunny.x),
+              width: s(L.bunny.w),
+              height: s(L.bunny.h),
+            }}
+          >
+            {LottieView ? (
+              <LottieView
+                source={ASSETS.animations.bunnyAndChicks}
+                autoPlay
+                loop
+                style={{ width: '100%', height: '100%' }}
+                accessibilityLabel="White bunny with chicks"
+              />
+            ) : null}
+          </View>
 
-        <View
-          pointerEvents="none"
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          className="absolute items-center"
-          style={{ bottom: '8%', right: '2%', width: '56%', aspectRatio: 1 }}
-        >
-          {LottieView && ASSETS.animations.bunnyAndChicks ? (
-            <LottieView
-              source={ASSETS.animations.bunnyAndChicks}
-              autoPlay
-              loop
-              style={{ width: '100%', height: '100%' }}
-            />
-          ) : null}
+          <View style={{ flexGrow: 1, minHeight: s(8) }} />
         </View>
-      </View>
+      </Stage>
     </Screen>
   );
 }

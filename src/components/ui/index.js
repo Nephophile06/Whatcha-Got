@@ -1,5 +1,6 @@
 export { AppText } from './AppText';
 export { Screen } from './Screen';
+export { Stage } from './Stage';
 export { Button } from './Button';
 export { Input } from './Input';
 export { OtpInput } from './OtpInput';

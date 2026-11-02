@@ -112,17 +112,42 @@ These rules are mandatory for all future work in this project.
 - Tab bar labels and OTP digits always use `allowFontScaling={false}`.
 - `DEV_FONT_SCALE` in `src/theme/tokens.js` is a dev-only multiplier for Assistant text (1 = device setting only). Leave it at 1 in committed code; change it temporarily to preview 1.3 / 1.5.
 
-### A2 — Responsive layout
-- Design base is **412 × 917**. Use `useScale()` from `src/lib/scale.js`: `s = clamp(width / 412, 0.85, 1.25)`; `sw(n)` scales horizontal sizes, radii and spacing.
-- Large regions (hero image, colour panel, form block) use flex ratios or percentage heights derived from the PNG, never fixed pixel offsets or absolute pixel positions. Decorations (mascots, glows) are positioned in percentages relative to their container.
-- Spacing uses only the scale 4 / 8 / 12 / 16 / 24 / 32 / 48 with a consistent vertical rhythm. Forms are centred with `maxWidth` ≈ 82% of the screen width.
-- Never set a fixed height or width on anything containing text. Use `minHeight`, `paddingHorizontal`, `flexShrink: 1`, `maxWidth`. No `overflow-hidden` on text ancestors.
-- Buttons: `minHeight` 48 + horizontal padding, width content or the full column, never a fixed width.
+### A2 — Responsive "design stage" system
+- Design base is **412 × 917 including the status bar**. `StageProvider` (in `src/lib/stage.js`) measures the real edge-to-edge root canvas with `onLayout`; it does not use `Dimensions.get('window')`.
+- Read the stage through `useStage()`: `{ W, H, aspect, insets, k, v, u, fx, fy, s }` where `k = W/412`, `v = H/917`, `u = clamp(min(k, v), 0.75, 1.3)`.
+  - `fx(n) = n * k` for horizontal offsets; `fy(n) = n * v` for vertical bands and heights that belong to the layout.
+  - `s(n) = n * u` for art, icons, radii and spacings that must keep their aspect.
+- Cap the stage width at **480** and centre it on tablets/web. Backgrounds, photos, gradients and panels are still full-bleed behind the column.
+- Every designed screen reads its rects from `src/layouts/<screen>.js` (x, y, w, h in the 412 × 917 frame). Screen JSX must not contain magic pixel numbers or fixed absolute offsets.
+- **R1 — Bands.** Define vertical bands from Figma Y values (e.g. hero 0–405, copy 462–640, CTA 708). Band heights use `fy()`. Anchor each element top/centre/bottom the way the PNG does.
+- **R2 — Art.** Images keep their aspect ratio: width `s(figmaWidth)` (height from the same scale). Anchor art to the top/bottom of its band or panel. Never stretch or crop a subject unintentionally.
+- **R3 — Absorbing extra height.** Extra or missing height is absorbed only by designated flex gaps between bands (minimum `s(8)`). Text and images are never resized to compensate. If content still cannot fit (short phone + large OS font), the Stage scrolls: its `contentContainerStyle` has `minHeight = H`, so normal phones never scroll.
+- `Stage` (from `src/components/ui`) renders the capped column, optional full-bleed `background`, and the scroll fallback. `Stage background` is used for photos and domes that must extend behind the column.
+- Tabbed screens (Profile, Account Settings) pass `minHeight={fy(803)}` because the navigator renders the tab bar separately below the stage.
+- Bottom-anchored elements add `insets.bottom`; top-anchored content respects `insets.top` while backgrounds still extend behind the bars.
+- Never set a fixed height or width on anything containing text. Use `minHeight`, `paddingHorizontal`, `flexShrink: 1`, `maxWidth`.
+- Buttons: `minHeight` 44 or larger + horizontal padding; width content or the full column.
 - Decorative images set `accessibilityElementsHidden` and `importantForAccessibility="no-hide-descendants"`.
 
-### A3 — Edge-to-edge system bars
+### A3 — Type sizing on the stage
+- `AppText` scales Assistant text by `clamp(u, 0.85, 1.2)`; `display` and `heading` (Fondamento) never follow the OS setting.
+- Single-line display titles use `numberOfLines` equal to the Figma line count plus `adjustsFontSizeToFit` and `minimumFontScale={0.85}`, so words are never dropped on small phones.
+- Dashed/curved panels use one oversized ellipse (width `s(figmaWidth)`, `borderRadius: width/2`, `overflow: 'hidden'`) so Android clips the gradient into the same dome as the PNG.
+
+### A4 — Edge-to-edge system bars
 - Backgrounds, gradients and panels extend behind the status bar and the Android navigation bar (no differently coloured strip at the top or bottom). Content respects safe-area insets.
 - Set the status bar style per screen with `expo-status-bar` (`dark` icons on light backgrounds, `light` icons on burgundy/dark ones).
+
+### A5 — Dev design overlay
+- `src/dev/DesignOverlay.jsx` + `src/dev/designFrames.js` draw the matching design PNG over the running screen at 40% opacity (stretched to the stage) and expose a floating "Design" toggle.
+- Enable it with `EXPO_PUBLIC_DESIGN_OVERLAY=1` before `npx expo start`. It is never mounted otherwise and is not part of production UI.
+
+## Known Gaps (deferred by design)
+- **Reset password screen** — the OTP success path goes to Home with a TODO; the reset screen is not designed yet.
+- **Suggestions/results screen** — Dashboard "continue" and "skip for now" show a "Suggestions coming soon" toast.
+- **Phone OTP** — the Forgot Password "Send to Phone" card is visible but disabled (needs an SMS provider / dev build).
+- **Google sign-in** — buttons show a "Coming soon" toast (needs a dev build).
+- **Legacy routes** — `calorie`, `list`, `favorites`, `share-recipe`, `target-calorie` render the shared `ComingSoonScreen` placeholder until their designs arrive.
 
 ## Quality Checklist (apply to every screen)
 - Matches the Figma frame at 412×917 and adapts to smaller phones.

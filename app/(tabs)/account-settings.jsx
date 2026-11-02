@@ -2,22 +2,29 @@ import React, { useState } from 'react';
 import { View, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { Screen, AppText, Input, Button, Toast } from '../../src/components/ui';
+import { Screen, Stage, AppText, Input, Button, Toast } from '../../src/components/ui';
 import { ASSETS } from '../../src/constants/assets';
 import { useAuthStore } from '../../src/store/authStore';
-import { useScale } from '../../src/lib/scale';
 import { colors } from '../../src/theme/tokens';
+import { useStage } from '../../src/lib/stage';
+import L from '../../src/layouts/account-settings';
 
 const ROSE_BUTTON = 'bg-primary-light border-primary-light';
+// The dense label is 11px on a 15px line so a label + 44px field is ~57px,
+// the Figma row step. Fields stack in flow and can never overlap.
+const DENSE_LABEL_LINE = 15;
+const HEADING_LINE = 1.5; // AppText body line-height ratio
 
 /**
  * Account Settings — lives inside app/(tabs) because the PNG shows the bottom
- * tab bar (Profile stays highlighted). The native header is disabled and the
- * screen paints its own back arrow + cream edge-to-edge background.
+ * tab bar (Profile stays highlighted). Bands from account-settings.png: back
+ * 70, avatar 133, heading 224, fields 268 / 325 / 382, done 450, heading 540,
+ * field 588, send 656. The native header is disabled and the screen paints its
+ * own back arrow (to /profile) + cream edge-to-edge background.
  */
 export default function AccountSettingsScreen() {
   const router = useRouter();
-  const { width } = useScale();
+  const { W, fx, fy, s } = useStage();
   const user = useAuthStore((state) => state.user);
   const updatePhone = useAuthStore((state) => state.updatePhone);
 
@@ -97,132 +104,215 @@ export default function AccountSettingsScreen() {
       <View className="flex-1">
         <Screen
           variant="cream"
-          scroll
           padded={false}
-          contentContainerClassName="pb-xl"
+          edges={[]}
           statusBarStyle="dark-content"
         >
-          <View className="px-md pt-sm">
-            <Pressable
-              onPress={() => router.back()}
-              accessibilityRole="button"
-              accessibilityLabel="Go back"
-              className="h-11 w-11 items-start justify-center"
-            >
-              <Image
-                source={ASSETS.icons.undoBack}
-                contentFit="contain"
-                accessibilityElementsHidden
-                importantForAccessibility="no-hide-descendants"
-                style={{ width: 32, height: 32 }}
-              />
-            </Pressable>
-
-            <View className="mt-md flex-row items-center px-sm">
-              <View className="h-[72px] w-[72px] items-center justify-center rounded-full bg-surface">
+          <Stage minHeight={fy(L.tabBarTop)}>
+            <View style={{ width: W, minHeight: fy(L.tabBarTop) }}>
+              <Pressable
+                onPress={() => router.push('/profile')}
+                accessibilityRole="button"
+                accessibilityLabel="Back to profile"
+                className="items-center justify-center"
+                style={{
+                  marginTop: fy(L.back.y),
+                  marginLeft: fx(L.back.x),
+                  width: s(L.back.w),
+                  height: s(L.back.h),
+                }}
+              >
                 <Image
-                  source={ASSETS.icons.customerProfile}
+                  source={ASSETS.icons.undoBack}
                   contentFit="contain"
-                  accessibilityLabel="Profile avatar"
-                  style={{ width: 34, height: 34 }}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
+                  style={{ width: s(32), height: s(32) }}
+                />
+              </Pressable>
+
+              <View
+                className="flex-row items-center"
+                style={{
+                  marginTop: fy(L.avatar.y - (L.back.y + L.back.h)),
+                  marginLeft: fx(L.avatar.x),
+                  marginRight: fx(45),
+                }}
+              >
+                <View
+                  className="items-center justify-center rounded-full bg-surface"
+                  style={{ width: s(L.avatar.w), height: s(L.avatar.h) }}
+                >
+                  <Image
+                    source={ASSETS.icons.customerProfile}
+                    contentFit="contain"
+                    accessibilityLabel="Profile avatar"
+                    style={{ width: s(34), height: s(34) }}
+                  />
+                </View>
+                <View style={{ flex: 1, marginLeft: fx(L.name.x - (L.avatar.x + L.avatar.w)) }}>
+                  <AppText
+                    variant="display"
+                    fontSize={L.name.size}
+                    numberOfLines={L.name.lines}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.85}
+                  >
+                    {username}
+                  </AppText>
+                  <AppText
+                    variant="body"
+                    fontSize={L.phone.size}
+                    className="text-text-primary"
+                    style={{ marginTop: fy(L.phone.y - (L.name.y + L.name.h)) }}
+                  >
+                    {currentPhone}
+                  </AppText>
+                </View>
+              </View>
+
+              <AppText
+                variant="body"
+                fontSize={L.heading1.size}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.85}
+                className="text-center"
+                style={{ marginTop: fy(L.heading1.y - (L.avatar.y + L.avatar.h)) }}
+              >
+                Update password
+              </AppText>
+
+              <View
+                style={{
+                  alignSelf: 'center',
+                  width: fx(L.field.w),
+                  marginTop: Math.max(
+                    fy(L.field1Y - DENSE_LABEL_LINE) -
+                      (fy(L.heading1.y) + s(L.heading1.size * HEADING_LINE)),
+                    0
+                  ),
+                }}
+              >
+                <Input
+                  compact
+                  denseLabel
+                  flush
+                  label="Current Password"
+                  placeholder="Current Password"
+                  value={currentPassword}
+                  onChangeText={(value) => {
+                    setCurrentPassword(value);
+                    clearPasswordError('current');
+                  }}
+                  error={passwordErrors.current}
+                  secure
+                  autoComplete="current-password"
+                />
+                <Input
+                  compact
+                  denseLabel
+                  flush
+                  label="New password"
+                  placeholder="New password"
+                  value={newPassword}
+                  onChangeText={(value) => {
+                    setNewPassword(value);
+                    clearPasswordError('new');
+                  }}
+                  error={passwordErrors.new}
+                  secure
+                  autoComplete="new-password"
+                />
+                <Input
+                  compact
+                  denseLabel
+                  flush
+                  label="Confirm Password"
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChangeText={(value) => {
+                    setConfirmPassword(value);
+                    clearPasswordError('confirm');
+                  }}
+                  error={passwordErrors.confirm}
+                  secure
+                  autoComplete="new-password"
                 />
               </View>
-              <View className="ml-lg flex-1">
-                <AppText variant="display" fontSize={28}>
-                  {username}
-                </AppText>
-                <AppText variant="body" fontSize={16} className="mt-xs text-text-primary">
-                  {currentPhone}
-                </AppText>
+
+              <Button
+                title="done"
+                size="md"
+                loading={passwordLoading}
+                onPress={handlePasswordSubmit}
+                className={ROSE_BUTTON}
+                textStyle={{ color: colors.primaryDark }}
+                style={{
+                  marginTop: fy(L.done.y - (L.field3Y + 44)),
+                  minWidth: fx(L.done.w),
+                  minHeight: Math.max(s(L.done.h), 44),
+                }}
+              />
+
+              <AppText
+                variant="body"
+                fontSize={L.heading2.size}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.85}
+                className="text-center"
+                style={{ marginTop: fy(L.heading2.y - (L.done.y + 44)) }}
+              >
+                Update Phone Number
+              </AppText>
+
+              <View
+                style={{
+                  alignSelf: 'center',
+                  width: fx(L.field.w),
+                  marginTop: Math.max(
+                    fy(L.field4Y - DENSE_LABEL_LINE) -
+                      (fy(L.heading2.y) + s(L.heading2.size * HEADING_LINE)),
+                    0
+                  ),
+                }}
+              >
+                <Input
+                  compact
+                  denseLabel
+                  flush
+                  label="New Phone Number"
+                  placeholder="New Phone Number"
+                  value={phone}
+                  onChangeText={(value) => {
+                    setPhone(value);
+                    if (phoneError) setPhoneError('');
+                  }}
+                  error={phoneError}
+                  keyboardType="phone-pad"
+                  autoComplete="tel"
+                  textContentType="telephoneNumber"
+                />
               </View>
+
+              <Button
+                title="send magic"
+                size="md"
+                loading={phoneLoading}
+                onPress={handlePhoneSubmit}
+                className={ROSE_BUTTON}
+                textStyle={{ color: colors.primaryDark }}
+                style={{
+                  marginTop: fy(L.send.y - (L.field4Y + 44)),
+                  minWidth: fx(L.send.w),
+                  minHeight: Math.max(s(L.send.h), 44),
+                }}
+              />
+
+              <View style={{ flexGrow: 1, minHeight: s(8) }} />
             </View>
-          </View>
-
-          <View
-            className="mt-lg w-full self-center px-lg"
-            style={{ maxWidth: Math.min(width * 0.62, 280) }}
-          >
-            <AppText variant="heading" fontSize={20} className="mb-md text-center">
-              Update password
-            </AppText>
-
-            <Input
-              compact
-              label="Current Password"
-              placeholder="Password"
-              value={currentPassword}
-              onChangeText={(value) => {
-                setCurrentPassword(value);
-                clearPasswordError('current');
-              }}
-              error={passwordErrors.current}
-              secure
-              autoComplete="current-password"
-            />
-            <Input
-              compact
-              label="New password"
-              placeholder="New password"
-              value={newPassword}
-              onChangeText={(value) => {
-                setNewPassword(value);
-                clearPasswordError('new');
-              }}
-              error={passwordErrors.new}
-              secure
-              autoComplete="new-password"
-            />
-            <Input
-              compact
-              label="Confirm Password"
-              placeholder="Repeat"
-              value={confirmPassword}
-              onChangeText={(value) => {
-                setConfirmPassword(value);
-                clearPasswordError('confirm');
-              }}
-              error={passwordErrors.confirm}
-              secure
-              autoComplete="new-password"
-            />
-
-            <Button
-              title="done"
-              size="md"
-              loading={passwordLoading}
-              onPress={handlePasswordSubmit}
-              className={`mt-sm ${ROSE_BUTTON}`}
-              textStyle={{ color: colors.primaryDark }}
-            />
-
-            <AppText variant="heading" fontSize={20} className="mb-md mt-xl text-center">
-              Update Phone Number
-            </AppText>
-
-            <Input
-              compact
-              label="New Phone Number"
-              placeholder="Phone number"
-              value={phone}
-              onChangeText={(value) => {
-                setPhone(value);
-                if (phoneError) setPhoneError('');
-              }}
-              error={phoneError}
-              keyboardType="phone-pad"
-              autoComplete="tel"
-              textContentType="telephoneNumber"
-            />
-
-            <Button
-              title="send magic"
-              size="md"
-              loading={phoneLoading}
-              onPress={handlePhoneSubmit}
-              className={`mt-sm ${ROSE_BUTTON}`}
-              textStyle={{ color: colors.primaryDark }}
-            />
-          </View>
+          </Stage>
         </Screen>
 
         {toast ? (

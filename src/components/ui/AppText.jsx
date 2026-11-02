@@ -14,6 +14,7 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { DEV_FONT_SCALE, typography } from '../../theme/tokens';
+import { clamp, useStage } from '../../lib/stage';
 import { cx } from './cx';
 
 const VARIANTS = {
@@ -96,9 +97,14 @@ export function AppText({
   ...props
 }) {
   const config = VARIANTS[variant] || VARIANTS.body;
+  const { u } = useStage();
+  // Screen-size scaling: text follows the stage, never the OS font setting for
+  // display/heading. Assistant sizes are additionally multiplied by the device
+  // scale (capped by maxFontSizeMultiplier) and by DEV_FONT_SCALE for preview.
+  const screenScale = clamp(u, 0.85, 1.2);
   const multiplier = config.scalesWithDev ? DEV_FONT_SCALE : 1;
   const baseSize = fontSizeProp ?? config.fontSize;
-  const fontSize = Math.round(baseSize * multiplier * 100) / 100;
+  const fontSize = Math.round(baseSize * screenScale * multiplier * 100) / 100;
   const lineHeight = Math.round(fontSize * config.lineHeightRatio * 100) / 100;
   // Avoid stacking two colour utilities: NativeWind resolves them by stylesheet
   // order, not by class order, which made inverse labels unreadable.
