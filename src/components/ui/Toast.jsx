@@ -12,9 +12,10 @@
  * Message copy uses textPrimary on pastel tints to stay above WCAG AA.
  */
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, shadows } from '../../theme/tokens';
+import { AppText } from './AppText';
 import { cx } from './cx';
 
 const TYPES = {
@@ -78,9 +79,9 @@ export function Toast({
         <Ionicons name={tone.icon} size={20} color={tone.iconColor} />
       </View>
 
-      <Text className="flex-1 py-xs font-sans-medium text-sm text-text-primary">
+      <AppText variant="label" className="flex-1 py-xs text-text-primary">
         {message}
-      </Text>
+      </AppText>
 
       <View className="ml-sm flex-row items-center">
         {onRetry ? (
@@ -90,7 +91,9 @@ export function Toast({
             accessibilityLabel="Retry"
             className="min-h-[44px] justify-center px-sm"
           >
-            <Text className={cx('font-sans-semibold text-sm', tone.accent)}>Retry</Text>
+            <AppText variant="label" className={cx('font-sans-semibold', tone.accent)}>
+              Retry
+            </AppText>
           </Pressable>
         ) : null}
 

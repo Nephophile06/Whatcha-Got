@@ -1,201 +1,197 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Screen, Button, Toast } from '../../src/components/ui';
-import { OtpInput } from '../../src/components/feature';
-import { authService } from '../../src/services/auth';
-import { colors, spacing, typography } from '../../src/theme/tokens';
+import React, { useEffect, useState } from 'react';
+import { View, Pressable } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Screen, AppText, OtpInput, Button } from '../../src/components/ui';
+import { ASSETS } from '../../src/constants/assets';
+import { colors, radius } from '../../src/theme/tokens';
+import { useScale } from '../../src/lib/scale';
 
-export default function OtpVerificationScreen() {
+const RESEND_SECONDS = 30;
+
+/**
+ * OTP Verification — 5 digits, mock rule "12345" succeeds.
+ * Error state can be opened directly with /(auth)/otp?state=error and is also
+ * entered whenever the code is wrong. Resend uses a 30s mock cooldown.
+ */
+export default function OtpScreen() {
   const router = useRouter();
-  const { email, from } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const { width, height } = useScale();
   const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [resendCooldown, setResendCooldown] = useState(30);
+  const [error, setError] = useState(params.state === 'error');
+  const [attempt, setAttempt] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+  const [verifying, setVerifying] = useState(false);
 
-  const handleVerify = async () => {
-    if (code.length < 6) {
-      setHasError(true);
-      setErrorMessage('Please enter all 6 digits of the verification code.');
+  useEffect(() => {
+    if (seconds <= 0) return undefined;
+    const timeout = setTimeout(() => setSeconds((value) => value - 1), 1000);
+    return () => clearTimeout(timeout);
+  }, [seconds]);
+
+  const handleConfirm = () => {
+    if (code.length < 5 || verifying) return;
+
+    if (code === '12345') {
+      setVerifying(true);
+      setError(false);
+      setTimeout(() => {
+        // TODO: reset password screen (not designed yet)
+        router.replace('/home-loading');
+      }, 600);
       return;
     }
 
-    setLoading(true);
-    setHasError(false);
-    setErrorMessage('');
+    setError(true);
+  };
 
-    // Call authService
-    const type = from === 'reset' ? 'recovery' : 'signup';
-    const { error } = await authService.verifyOtp({
-      email: email || 'user@example.com',
-      token: code,
-      type,
-    });
-
-    setLoading(false);
-
-    // If backend isn't set up yet, allow valid sample code or flag error
-    if (code === '000000') {
-      // Demo explicit error state trigger
-      setHasError(true);
-      setErrorMessage('The code you entered is invalid or expired. Please check and retry.');
-      return;
-    }
-
-    if (error && error !== 'Invalid or expired OTP code') {
-      // If mock/offline or valid format, proceed
-      router.replace('/(tabs)/home');
-    } else if (error) {
-      setHasError(true);
-      setErrorMessage(error);
-    } else {
-      router.replace('/(tabs)/home');
-    }
+  const handleTryAgain = () => {
+    setError(false);
+    setCode('');
+    setVerifying(false);
+    setAttempt((value) => value + 1);
   };
 
   const handleResend = () => {
-    setResendCooldown(30);
-    setHasError(false);
-    setErrorMessage('');
-    authService.resetPasswordForEmail(email || 'user@example.com');
+    if (seconds > 0) return;
+    setSeconds(RESEND_SECONDS);
+    handleTryAgain();
   };
 
   return (
-    <Screen scrollable style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Enter Verification Code</Text>
-        <Text style={styles.subtitle}>
-          We sent a 6-digit code to{' '}
-          <Text style={styles.emailHighlight}>{email || 'your email'}</Text>.
-        </Text>
-      </View>
+    <Screen
+      variant="otp"
+      scroll
+      padded={false}
+      contentContainerClassName="flex-grow"
+      statusBarStyle="dark-content"
+    >
+      <View className="relative flex-1 px-xl">
+        <View className="items-center" style={{ paddingTop: Math.round(height * 0.075) }}>
+          <Image
+            source={ASSETS.illustrations.imposterDetective}
+            contentFit="contain"
+            accessibilityLabel="Bear holding a cookie"
+            style={{ width: Math.round(width * 0.31), aspectRatio: 143 / 153 }}
+          />
 
-      <Toast
-        visible={hasError}
-        type="error"
-        message={errorMessage || 'Invalid verification code.'}
-        onRetry={handleVerify}
-        onDismiss={() => {
-          setHasError(false);
-          setErrorMessage('');
-        }}
-      />
-
-      <View style={styles.otpSection}>
-        <OtpInput
-          length={6}
-          value={code}
-          onChange={(newVal) => {
-            setCode(newVal);
-            if (hasError) {
-              setHasError(false);
-              setErrorMessage('');
-            }
-          }}
-          hasError={hasError}
-          errorMessage={errorMessage}
-        />
-      </View>
-
-      <View style={styles.resendRow}>
-        <Text style={styles.resendPrompt}>Didn't receive code? </Text>
-        <TouchableOpacity
-          onPress={handleResend}
-          disabled={resendCooldown > 0}
-          accessibilityRole="button"
-        >
-          <Text
-            style={[
-              styles.resendAction,
-              resendCooldown > 0 && styles.resendDisabled,
-            ]}
+          <AppText
+            variant="display"
+            fontSize={26}
+            className={error ? 'mt-lg text-center text-text-secondary' : 'mt-lg text-center'}
           >
-            {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
-          </Text>
-        </TouchableOpacity>
+            Are you an Imposter?👀
+          </AppText>
+
+          <AppText
+            variant="body"
+            className="mt-xs text-center text-text-secondary"
+            style={{ maxWidth: Math.min(width * 0.86, 360) }}
+          >
+            Just kidding! But let's be safe. Drop the magic and enter it below to verify.
+          </AppText>
+        </View>
+
+        <View className="mt-xl items-center">
+          <OtpInput
+            key={attempt}
+            length={5}
+            value={code}
+            onChange={setCode}
+            autoFocus
+            error={false}
+          />
+        </View>
+
+        {!error ? (
+          <View className="items-center">
+            <Button
+              title="confirm"
+              size="md"
+              onPress={handleConfirm}
+              loading={verifying}
+              style={{ marginTop: Math.round(height * 0.07) }}
+            />
+
+            <Pressable
+              onPress={handleResend}
+              disabled={seconds > 0}
+              accessibilityRole="button"
+              accessibilityLabel="Resend verification code"
+              accessibilityState={{ disabled: seconds > 0 }}
+              className="mt-md min-h-[44px] items-center justify-center px-md"
+            >
+              <AppText
+                variant="label"
+                className={seconds > 0 ? 'text-text-muted' : 'text-text-secondary'}
+              >
+                Didn't get magic?{' '}
+                <AppText
+                  variant="label"
+                  className={
+                    seconds > 0 ? 'text-text-muted' : 'text-text-secondary underline'
+                  }
+                >
+                  {seconds > 0 ? `try again in ${seconds}s` : 'try again'}
+                </AppText>
+              </AppText>
+            </Pressable>
+          </View>
+        ) : null}
+
+        <View className="flex-1" />
+
+        {!error ? (
+          <View
+            className="items-center"
+            style={{ marginBottom: Math.round(height * 0.11) }}
+          >
+            <Image
+              source={ASSETS.illustrations.catPawPrints}
+              contentFit="contain"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={{ width: '30%', aspectRatio: 148 / 250 }}
+            />
+          </View>
+        ) : null}
       </View>
 
-      <View style={styles.footer}>
-        <Button
-          title="Verify & Continue"
-          size="lg"
-          variant="primary"
-          loading={loading}
-          disabled={code.length < 6}
-          onPress={handleVerify}
-          style={styles.verifyBtn}
-        />
-        <Button
-          title="Back to Log In"
-          variant="text"
-          size="sm"
-          onPress={() => router.back()}
-          style={styles.backBtn}
-          textStyle={styles.backText}
-        />
-      </View>
+      {error ? (
+        <View
+          className="absolute bottom-0 left-0 right-0 overflow-hidden"
+          style={{ top: '57%', borderTopLeftRadius: radius.xxl, borderTopRightRadius: radius.xxl }}
+        >
+          <LinearGradient
+            colors={[colors.primaryGlow, colors.primary, colors.primaryDeep]}
+            locations={[0, 0.3, 0.85]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              paddingHorizontal: 32,
+              paddingBottom: Math.round(height * 0.055),
+            }}
+          >
+            <AppText variant="body" fontSize={17} className="text-center text-text-inverse">
+              Uh-oh! Caught You! That's exactly what an imposter would say. Double-check your
+              magic!
+            </AppText>
+
+            <Button
+              title="try again :("
+              variant="light"
+              size="md"
+              onPress={handleTryAgain}
+              className="mt-xl"
+            />
+          </LinearGradient>
+        </View>
+      ) : null}
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-  },
-  header: {
-    marginBottom: spacing.lg,
-  },
-  title: {
-    fontSize: typography.fontSize.xxl,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-  },
-  subtitle: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    lineHeight: 20,
-  },
-  emailHighlight: {
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  otpSection: {
-    marginVertical: spacing.lg,
-  },
-  resendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.xl,
-  },
-  resendPrompt: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-  },
-  resendAction: {
-    fontSize: typography.fontSize.sm,
-    color: colors.primary,
-    fontWeight: '700',
-  },
-  resendDisabled: {
-    color: colors.textMuted,
-  },
-  footer: {
-    gap: spacing.sm,
-  },
-  verifyBtn: {
-    width: '100%',
-  },
-  backBtn: {
-    marginTop: spacing.xs,
-  },
-  backText: {
-    color: colors.textSecondary,
-    fontWeight: '600',
-  },
-});
-

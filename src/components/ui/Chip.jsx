@@ -10,7 +10,8 @@
  * - className / style / textClassName
  */
 import React, { useState } from 'react';
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
+import { AppText } from './AppText';
 import { cx } from './cx';
 
 export function Chip({
@@ -48,16 +49,16 @@ export function Chip({
       style={style}
     >
       {icon}
-      <Text
+      <AppText
+        variant="label"
+        fontSize={size === 'sm' ? 12 : 14}
         className={cx(
-          'font-sans-medium',
-          size === 'sm' ? 'text-xs' : 'text-sm',
           selected ? 'text-text-inverse' : 'text-text-primary',
           textClassName
         )}
       >
         {label}
-      </Text>
+      </AppText>
     </Pressable>
   );
 }

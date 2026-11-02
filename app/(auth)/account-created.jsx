@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, useWindowDimensions, StyleSheet } from 'react-native';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Screen, Input, Button } from '../../src/components/ui';
+import { Screen, AppText, Input, Button } from '../../src/components/ui';
 import { ASSETS } from '../../src/constants/assets';
-import { colors } from '../../src/theme/tokens';
+import { useScale } from '../../src/lib/scale';
+import { colors, spacing, DEV_FONT_SCALE } from '../../src/theme/tokens';
 
 let LottieView;
 try {
@@ -17,7 +18,13 @@ try {
 function BackdropRow({ icon, children }) {
   return (
     <View className="mb-lg flex-row items-center">
-      <Image source={icon} contentFit="contain" style={{ width: 34, height: 34 }} />
+      <Image
+        source={icon}
+        contentFit="contain"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={{ width: 34, height: 34 }}
+      />
       <View className="ml-md flex-1 pr-lg">{children}</View>
     </View>
   );
@@ -31,39 +38,57 @@ function SignupBackdrop() {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <View className="flex-row items-start justify-between px-xxl pt-xl">
-        <View className="mt-md pl-lg">
-          <Text className="font-display text-hero text-text-primary">Hello!!</Text>
+      <View className="flex-row items-start justify-between px-xl pt-md">
+        <View className="mt-sm">
+          <AppText variant="display" fontSize={34}>
+            Hello!!
+          </AppText>
           <Image
             source={ASSETS.illustrations.helloKaomoji}
             contentFit="contain"
-            style={{ width: 118, height: 25, marginTop: 4 }}
+            style={{ width: 112, height: 24, marginTop: 4 }}
           />
         </View>
         <Image
           source={ASSETS.illustrations.catChefWhisking}
           contentFit="contain"
-          style={{ width: 84, height: 108 }}
+          style={{ width: 78, height: 96 }}
         />
       </View>
 
-      <Text className="mt-xxl px-lg text-center font-sans text-lg leading-6 text-text-primary">
-        {"It's no fun eating alone!\n"}
-        {"We're whisking up something sweet...\n"}
-        {'Sign up so we can taste test together!'}
-      </Text>
+      <AppText
+        variant="body"
+        className="mt-lg self-center px-lg text-center text-text-primary"
+        style={{ maxWidth: 330 }}
+      >
+        {"It's no fun eating alone! We're whisking up something sweet... Sign up so we can taste test together!"}
+      </AppText>
 
-      <View className="mt-xl pl-xxl pr-xxl">
+      <View className="mt-xl w-full self-center px-lg" style={{ maxWidth: 330 }}>
         <BackdropRow icon={ASSETS.illustrations.cuteBunny}>
-          <Input compact placeholder="give yourself a unique username" value="" editable={false} />
+          <Input
+            compact
+            placeholder="give yourself a unique username"
+            value=""
+            editable={false}
+            inputStyle={{ fontSize: 12 }}
+          />
         </BackdropRow>
         <BackdropRow icon={ASSETS.illustrations.thinkingCat}>
-          <Input compact placeholder="password [minimum 5 char/letter]" value="" editable={false} />
+          <Input
+            compact
+            placeholder="password [minimum 5 char/letter]"
+            value=""
+            editable={false}
+            inputStyle={{ fontSize: 12 }}
+          />
         </BackdropRow>
 
         <View className="mt-md items-center">
           <View className="min-h-[48px] items-center justify-center rounded-md bg-primary px-lg">
-            <Text className="font-sans-medium text-md text-text-inverse">Purr-fect!</Text>
+            <AppText variant="button" className="text-text-inverse">
+              Purr-fect!
+            </AppText>
           </View>
         </View>
       </View>
@@ -71,44 +96,65 @@ function SignupBackdrop() {
   );
 }
 
+/**
+ * Account Created — the red ellipse starts at ~63% of the frame exactly as in
+ * design/screens/account-created-successfully.png. The button now routes to the
+ * home loading state before the dashboard.
+ */
 export default function AccountCreatedScreen() {
   const router = useRouter();
-  const { height } = useWindowDimensions();
-  const compact = height < 700;
-
-  const bunnySize = compact ? { width: 74, height: 98 } : { width: 96, height: 128 };
+  const { isShort } = useScale();
+  const { fontScale } = useWindowDimensions();
+  // Larger text needs more of the frame: raise the success panel so the whole
+  // message and button stay inside the viewport instead of being clipped.
+  const bigText = Math.max(fontScale || 1, DEV_FONT_SCALE) > 1.2;
+  const panelTop = bigText
+    ? isShort
+      ? '49%'
+      : '58%'
+    : isShort
+      ? '58%'
+      : '63%';
 
   return (
     <Screen
       variant="blue"
       padded={false}
       edges={['top']}
-      contentContainerClassName="overflow-hidden"
+      contentContainerClassName="flex-grow"
       statusBarStyle="dark-content"
     >
       <SignupBackdrop />
 
       <View
         pointerEvents="none"
-        className="absolute overflow-hidden rounded-full"
-        style={{ top: '63%', left: '-50%', width: '200%', aspectRatio: 1 }}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        className="absolute bottom-0 left-0 right-0 top-0 overflow-hidden"
       >
-        <LinearGradient
-          colors={[colors.primaryGlow, colors.primary, colors.primaryDeep]}
-          locations={[0, 0.22, 0.37]}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
+        <View
+          className="absolute rounded-full"
+          style={{ top: panelTop, left: '-50%', width: '200%', aspectRatio: 1 }}
+        >
+          <LinearGradient
+            colors={[colors.primaryGlow, colors.primary, colors.primaryDeep]}
+            locations={[0, 0.22, 0.37]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+        </View>
       </View>
 
       <View
-        pointerEvents="box-none"
-        className="absolute bottom-0 left-0 right-0 items-center px-lg pt-xs"
-        style={{ top: '63%' }}
+        className="absolute bottom-0 left-0 right-0 items-center px-lg"
+        style={{ top: panelTop, paddingTop: bigText ? spacing.sm : spacing.md }}
       >
         {LottieView && ASSETS.animations.bunnyAndChicks ? (
-          <View style={bunnySize}>
+          <View
+            style={{ width: bigText ? 88 : 96, height: bigText ? 112 : 128 }}
+            accessibilityElementsHidden
+          >
             <LottieView
               source={ASSETS.animations.bunnyAndChicks}
               autoPlay
@@ -119,20 +165,26 @@ export default function AccountCreatedScreen() {
           </View>
         ) : null}
 
-        <Text className="mt-xs text-center font-display text-lg text-text-inverse">
+        <AppText
+          variant="display"
+          fontSize={20}
+          className="mt-xs text-center text-text-inverse"
+          style={{ marginTop: bigText ? 0 : spacing.xs }}
+        >
           Whatcha Got? You! ✨
-        </Text>
+        </AppText>
 
-        <Text className="text-center font-sans text-md text-text-inverse">
+        <AppText variant="body" className="text-center text-text-inverse">
           Your account is all set &amp; ready for some magic.
-        </Text>
+        </AppText>
 
         <Button
           title="take me home"
           variant="light"
           size="sm"
-          onPress={() => router.replace('/(tabs)/home')}
+          onPress={() => router.replace('/home-loading')}
           className="mt-md"
+          style={{ marginTop: bigText ? spacing.sm : spacing.md }}
         />
       </View>
     </Screen>

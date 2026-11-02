@@ -74,6 +74,12 @@ export const spacing = {
   xxl: 48,
 };
 
+/**
+ * Dev-only body-text multiplier (1 = device setting only).
+ * Change to 1.3 / 1.5 while previewing in Chrome, then leave at 1.
+ */
+export const DEV_FONT_SCALE = 1;
+
 export const typography = {
   fontFamily: {
     sans: 'Assistant-Regular',
@@ -123,6 +129,27 @@ export const gradients = {
     locations: [0, 0.42, 1],
     start: { x: 0.1, y: 0 },
     end: { x: 0, y: 1 },
+  },
+  // Pale mint page used by Login, Forgot Password and Home Loading.
+  mintPage: {
+    colors: [colors.mint, colors.mint, colors.surface],
+    locations: [0, 0.55, 1],
+    start: { x: 0.2, y: 0 },
+    end: { x: 0.2, y: 1 },
+  },
+  // Warm cream page used by Profile and Account Settings.
+  cream: {
+    colors: [colors.butter, colors.butter, colors.surface],
+    locations: [0, 0.42, 1],
+    start: { x: 0.3, y: 0 },
+    end: { x: 0.3, y: 1 },
+  },
+  // Blush page with a white centre glow, used by OTP verification.
+  otp: {
+    colors: [colors.blush, colors.surface, colors.blush],
+    locations: [0, 0.42, 1],
+    start: { x: 0.5, y: 0 },
+    end: { x: 0.5, y: 1 },
   },
   green: {
     colors: [colors.surface, colors.mint],

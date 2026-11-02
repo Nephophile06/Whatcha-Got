@@ -11,10 +11,11 @@
  * - className / style
  */
 import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, shadows } from '../../theme/tokens';
+import { AppText } from './AppText';
 import { cx } from './cx';
 
 const TINTS = {
@@ -45,21 +46,26 @@ export function CategoryTile({
       accessibilityState={{ checked: selected }}
       accessibilityLabel={label}
       className={cx(
-        'w-[31%] overflow-hidden rounded-lg border-2 bg-surface',
+        'w-[23%] flex-grow-0 rounded-md border bg-surface',
         selected ? 'border-primary' : 'border-border',
         pressed && 'opacity-90',
         className
       )}
       style={[shadows.sm, style]}
     >
-      <View className={cx('h-20 w-full', TINTS[tint] || TINTS.blush)}>
+      <View
+        className={cx('w-full overflow-hidden rounded-t-md', TINTS[tint] || TINTS.blush)}
+        style={{ aspectRatio: 1.55 }}
+      >
         {image ? (
           <Image
             source={image}
             style={{ width: '100%', height: '100%' }}
-            contentFit="cover"
+            contentFit="contain"
             transition={150}
             accessibilityIgnoresInvertColors
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
           />
         ) : (
           <View className="h-full w-full items-center justify-center">
@@ -74,15 +80,16 @@ export function CategoryTile({
         ) : null}
       </View>
 
-      <Text
-        numberOfLines={1}
+      <AppText
+        variant="label"
+        fontSize={13}
         className={cx(
-          'px-sm py-sm text-center font-sans-medium text-sm',
+          'px-xs py-xs text-center',
           selected ? 'text-primary' : 'text-text-primary'
         )}
       >
         {label}
-      </Text>
+      </AppText>
     </Pressable>
   );
 }

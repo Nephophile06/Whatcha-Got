@@ -14,8 +14,9 @@
  * moves back once empty, and pasting a code fills all boxes at once.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput } from 'react-native';
+import { View, TextInput } from 'react-native';
 import { colors } from '../../theme/tokens';
+import { AppText } from './AppText';
 import { cx } from './cx';
 
 function toDigits(text, length) {
@@ -106,26 +107,29 @@ export function OtpInput({
             maxLength={length}
             selectTextOnFocus
             selectionColor={colors.primary}
+            allowFontScaling={false}
             accessibilityLabel={`Verification digit ${index + 1}`}
             className={cx(
-              'h-14 max-w-[56px] flex-1 rounded-md border-[1.5px] py-0 text-center font-sans-semibold text-xl',
+              'min-h-[56px] max-w-[56px] flex-1 rounded-md border-[1.5px] py-0 text-center font-sans-semibold',
               error
                 ? 'border-error bg-error-light text-error'
                 : focusedIndex === index
                   ? 'border-primary bg-surface text-text-primary'
                   : 'border-text-muted bg-surface text-text-primary'
             )}
+            style={{ fontSize: 22, lineHeight: 28 }}
           />
         ))}
       </View>
 
       {error && errorMessage ? (
-        <Text
+        <AppText
+          variant="caption"
           accessibilityRole="alert"
-          className="mt-sm text-center font-sans-medium text-xs text-error"
+          className="mt-sm text-center font-sans-medium text-error"
         >
           {errorMessage}
-        </Text>
+        </AppText>
       ) : null}
     </View>
   );

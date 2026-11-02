@@ -20,7 +20,7 @@ export default function GroceryListScreen() {
   };
 
   return (
-    <Screen scrollable style={styles.container}>
+    <Screen scroll style={styles.container}>
       {/* Top Header */}
       <View style={styles.header}>
         <View>

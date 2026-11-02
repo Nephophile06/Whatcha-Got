@@ -13,7 +13,7 @@ export default function FavoritesScreen() {
   const addItemToGrocery = useGroceryStore((s) => s.addItem);
 
   return (
-    <Screen scrollable style={styles.container}>
+    <Screen scroll style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Saved Favorites</Text>
         <Text style={styles.subtitle}>{favorites.length} saved dishes</Text>

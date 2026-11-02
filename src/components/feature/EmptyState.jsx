@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { AppText } from '../ui/AppText';
 import { Button } from '../ui/Button';
-import { colors, spacing, typography } from '../../theme/tokens';
+import { spacing } from '../../theme/tokens';
 
 export const EmptyState = ({
   icon = '🥣',
@@ -15,9 +16,13 @@ export const EmptyState = ({
 }) => {
   return (
     <View style={[styles.container, style]}>
-      <Text style={styles.icon}>{icon}</Text>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.description}>{description}</Text>
+      <AppText style={styles.icon}>{icon}</AppText>
+      <AppText variant="title" style={styles.title}>
+        {title}
+      </AppText>
+      <AppText variant="body" fontSize={14} style={styles.description}>
+        {description}
+      </AppText>
       <View style={styles.actions}>
         {actionLabel && onAction ? (
           <Button
@@ -54,17 +59,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   title: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: '700',
-    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: spacing.xs,
   },
   description: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
     marginBottom: spacing.lg,
     maxWidth: 280,
   },

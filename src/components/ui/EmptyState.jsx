@@ -10,9 +10,10 @@
  * - className / style / illustrationClassName
  */
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { ASSETS } from '../../constants/assets';
+import { AppText } from './AppText';
 import { Button } from './Button';
 import { cx } from './cx';
 
@@ -48,15 +49,15 @@ export function EmptyState({
       ) : null}
 
       {title ? (
-        <Text className="mt-md text-center font-display text-xxl text-text-primary">
+        <AppText variant="heading" className="mt-md text-center">
           {title}
-        </Text>
+        </AppText>
       ) : null}
 
       {body ? (
-        <Text className="mt-sm max-w-[280px] text-center font-sans text-sm text-text-secondary">
+        <AppText variant="body" fontSize={14} className="mt-sm text-center text-text-secondary">
           {body}
-        </Text>
+        </AppText>
       ) : null}
 
       {actionLabel || secondaryActionLabel ? (
