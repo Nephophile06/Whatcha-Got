@@ -101,8 +101,31 @@ Email/password signup + login, email OTP for password recovery (`signInWithOtp` 
 **Phase 6 — Data**
 Tables: `profiles`, `recipes`, `recipe_ingredients`, `favorites`, `grocery_items`. Enable Row Level Security. Wire Share Recipe (upload to Supabase Storage bucket `recipe-images`), Favorites, calorie goal save.
 
+## Layout & Typography Rules
+
+These rules are mandatory for all future work in this project.
+
+### A1 — Typography policy
+- Use `AppText` from `src/components/ui/AppText.jsx` for every piece of text. Do not render raw `<Text>` in screens or components (TextInput internals and nested spans inside AppText are the only exceptions).
+- Variants `display` and `heading` use Fondamento and keep their size at all times (`allowFontScaling={false}`). They must never change with the device font setting.
+- Variants `body`, `label` and `caption` use Assistant and follow the device font size, capped with `maxFontSizeMultiplier` (body 1.3; label/button/caption 1.2).
+- Tab bar labels and OTP digits always use `allowFontScaling={false}`.
+- `DEV_FONT_SCALE` in `src/theme/tokens.js` is a dev-only multiplier for Assistant text (1 = device setting only). Leave it at 1 in committed code; change it temporarily to preview 1.3 / 1.5.
+
+### A2 — Responsive layout
+- Design base is **412 × 917**. Use `useScale()` from `src/lib/scale.js`: `s = clamp(width / 412, 0.85, 1.25)`; `sw(n)` scales horizontal sizes, radii and spacing.
+- Large regions (hero image, colour panel, form block) use flex ratios or percentage heights derived from the PNG, never fixed pixel offsets or absolute pixel positions. Decorations (mascots, glows) are positioned in percentages relative to their container.
+- Spacing uses only the scale 4 / 8 / 12 / 16 / 24 / 32 / 48 with a consistent vertical rhythm. Forms are centred with `maxWidth` ≈ 82% of the screen width.
+- Never set a fixed height or width on anything containing text. Use `minHeight`, `paddingHorizontal`, `flexShrink: 1`, `maxWidth`. No `overflow-hidden` on text ancestors.
+- Buttons: `minHeight` 48 + horizontal padding, width content or the full column, never a fixed width.
+- Decorative images set `accessibilityElementsHidden` and `importantForAccessibility="no-hide-descendants"`.
+
+### A3 — Edge-to-edge system bars
+- Backgrounds, gradients and panels extend behind the status bar and the Android navigation bar (no differently coloured strip at the top or bottom). Content respects safe-area insets.
+- Set the status bar style per screen with `expo-status-bar` (`dark` icons on light backgrounds, `light` icons on burgundy/dark ones).
+
 ## Quality Checklist (apply to every screen)
-- Matches the Figma frame at 390×844 and adapts to smaller phones.
+- Matches the Figma frame at 412×917 and adapts to smaller phones.
 - Touch targets ≥ 44×44 px. Text contrast meets WCAG AA.
 - Inputs have visible persistent labels (not placeholder-only).
 - Buttons use direct action labels ("Save Goal", "Share Recipe"), never vague copy.

@@ -15,8 +15,9 @@
  * All colors and spacing come from design tokens.
  */
 import React from 'react';
-import { View, ScrollView, StatusBar, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { gradients } from '../../theme/tokens';
 import { cx } from './cx';
@@ -36,6 +37,7 @@ export function Screen({
   scrollViewProps,
 }) {
   const gradient = gradients[variant];
+  const barStyle = statusBarStyle === 'light-content' ? 'light' : 'dark';
 
   return (
     <View className={cx('flex-1 bg-background', className)} style={style}>
@@ -50,7 +52,7 @@ export function Screen({
         />
       ) : null}
 
-      <StatusBar barStyle={statusBarStyle} />
+      <StatusBar style={barStyle} translucent backgroundColor="transparent" />
 
       <SafeAreaView edges={edges} style={styles.safeArea}>
         {scroll ? (

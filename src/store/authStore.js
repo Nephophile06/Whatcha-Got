@@ -1,55 +1,60 @@
+/**
+ * Auth store — mock user state for the static phases.
+ * No Supabase calls: Phase 5 will replace these handlers with services/auth.js.
+ */
 import { create } from 'zustand';
-import { authService } from '../services/auth';
 
-export const useAuthStore = create((set, get) => ({
+const MOCK_USER = {
+  username: 'Nondiní',
+  email: 'nondini@example.com',
+  phone: '01xxxxxxxxx',
+};
+
+export const useAuthStore = create((set) => ({
   user: null,
-  session: null,
-  isLoading: true,
+  isLoading: false,
   hasCompletedOnboarding: false,
   error: null,
 
   setHasCompletedOnboarding: (status) => set({ hasCompletedOnboarding: status }),
 
+  /** Kept async so switching to Supabase later does not change call sites. */
   checkSession: async () => {
-    set({ isLoading: true });
-    const { session, error } = await authService.getSession();
-    if (session) {
-      set({ session, user: session.user, isLoading: false, error: null });
-    } else {
-      set({ session: null, user: null, isLoading: false, error });
-    }
+    set({ isLoading: false });
   },
 
-  signIn: async (email, password) => {
+  login: async ({ email } = {}) => {
     set({ isLoading: true, error: null });
-    const { data, error } = await authService.signIn({ email, password });
-    if (error) {
-      set({ isLoading: false, error });
-      return { success: false, error };
-    }
-    set({ user: data.user, session: data.session, isLoading: false, error: null });
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    set({
+      user: { ...MOCK_USER, email: email || MOCK_USER.email },
+      isLoading: false,
+    });
     return { success: true };
   },
 
-  signUp: async (email, password, fullName) => {
+  signUp: async ({ username, email } = {}) => {
     set({ isLoading: true, error: null });
-    const { data, error } = await authService.signUp({ email, password, fullName });
-    if (error) {
-      set({ isLoading: false, error });
-      return { success: false, error };
-    }
-    set({ isLoading: false, error: null });
-    return { success: true, data };
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    set({
+      user: {
+        ...MOCK_USER,
+        username: username || MOCK_USER.username,
+        email: email || MOCK_USER.email,
+      },
+      isLoading: false,
+    });
+    return { success: true };
   },
 
-  signOut: async () => {
-    set({ isLoading: true });
-    await authService.signOut();
-    set({ user: null, session: null, isLoading: false, error: null });
-  },
+  updatePhone: (phone) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, phone } : state.user,
+    })),
+
+  logout: () => set({ user: null, error: null }),
 
   clearError: () => set({ error: null }),
 }));
 
 export default useAuthStore;
-

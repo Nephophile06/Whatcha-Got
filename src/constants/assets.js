@@ -61,13 +61,13 @@ export const ASSETS = {
     termsAndConditions: require('../../assets/icons/terms-and-conditions.png'),
     undoBack: require('../../assets/icons/undo-back.png'),
   },
-  // Ionicons glyph names used by the bottom TabBar.
+  // Tab bar glyphs (tinted with the token colours at render time).
   tabIcons: {
-    home: { active: 'home', inactive: 'home-outline' },
-    calorie: { active: 'flame', inactive: 'flame-outline' },
-    list: { active: 'basket', inactive: 'basket-outline' },
-    favorites: { active: 'heart', inactive: 'heart-outline' },
-    profile: { active: 'person', inactive: 'person-outline' },
+    home: require('../../assets/icons/fido-home.png'),
+    calorie: require('../../assets/icons/calorie-calculator.png'),
+    list: require('../../assets/icons/bulleted-list.png'),
+    favorites: require('../../assets/icons/heart-favorites.png'),
+    profile: require('../../assets/icons/customer-profile.png'),
   },
   illustrations: {
     catChefWhisking: require('../../assets/illustrations/cat-chef-whisking.png'),

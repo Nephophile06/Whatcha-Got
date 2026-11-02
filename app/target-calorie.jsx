@@ -32,7 +32,7 @@ export default function TargetCalorieScreen() {
   };
 
   return (
-    <Screen scrollable style={styles.container}>
+    <Screen scroll style={styles.container}>
       {feedback ? (
         <Toast
           visible={!!feedback}

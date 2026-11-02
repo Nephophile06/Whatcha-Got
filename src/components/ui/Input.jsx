@@ -17,9 +17,10 @@
  * Contrast: textPrimary on surface exceeds WCAG AAA; muted placeholders meet AA.
  */
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable } from 'react-native';
+import { View, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/tokens';
+import { AppText } from './AppText';
 import { cx } from './cx';
 
 export function Input({
@@ -37,6 +38,8 @@ export function Input({
   required = false,
   leftIcon,
   rightIcon,
+  outsideIcon,
+  outsideIconClassName,
   className,
   style,
   inputClassName,
@@ -57,9 +60,10 @@ export function Input({
   return (
     <View className={cx('mb-md w-full', className)} style={style}>
       {label ? (
-        <Text
+        <AppText
+          variant="label"
           className={cx(
-            'mb-xs font-sans-medium text-sm',
+            'mb-xs',
             hasError
               ? 'text-error'
               : disabled
@@ -70,84 +74,108 @@ export function Input({
           )}
         >
           {label}
-          {required ? <Text className="text-error"> *</Text> : null}
-        </Text>
+          {required ? (
+            <AppText variant="label" className="text-error">
+              {' '}
+              *
+            </AppText>
+          ) : null}
+        </AppText>
       ) : null}
 
-      <View
-        className={cx(
-          compact ? 'min-h-[44px]' : 'min-h-[52px]',
-          'flex-row items-center rounded-md border-[1.5px] px-md',
-          hasError
-            ? 'border-error bg-error-light'
-            : disabled
-              ? 'border-border bg-surface-subtle opacity-60'
-              : focused
-                ? 'border-primary bg-surface'
-                : isFilled
-                  ? 'border-text-muted bg-surface'
-                  : 'border-text-muted bg-surface-subtle'
-        )}
-      >
-        {leftIcon ? <View className="mr-sm">{leftIcon}</View> : null}
-
-        <TextInput
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor={colors.textMuted}
-          selectionColor={colors.primary}
-          editable={!disabled}
-          secureTextEntry={isPassword && !passwordVisible}
-          accessibilityLabel={label}
-          accessibilityState={{ disabled }}
-          onFocus={(event) => {
-            setFocused(true);
-            onFocus?.(event);
-          }}
-          onBlur={(event) => {
-            setFocused(false);
-            onBlur?.(event);
-          }}
-          autoCapitalize="none"
-          className={cx(
-            'flex-1 bg-transparent py-sm font-sans',
-            compact ? 'text-sm' : 'text-md',
-            disabled ? 'text-text-muted' : 'text-text-primary',
-            inputClassName
-          )}
-          style={inputStyle}
-          {...props}
-        />
-
-        {canTogglePassword ? (
-          <Pressable
-            onPress={() => setPasswordVisible((visible) => !visible)}
-            hitSlop={4}
-            accessibilityRole="button"
-            accessibilityLabel={passwordVisible ? 'Hide password' : 'Show password'}
-            className="ml-sm h-11 w-11 items-center justify-center"
+      {/* The outside icon is centred on the field box only, never on the label. */}
+      <View className="flex-row items-center">
+        {outsideIcon ? (
+          <View
+            className={cx(
+              'mr-md w-[34px] shrink-0 items-center justify-center',
+              outsideIconClassName
+            )}
           >
-            <Ionicons
-              name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
-              size={20}
-              color={colors.textMuted}
-            />
-          </Pressable>
-        ) : rightIcon ? (
-          <View className="ml-sm">{rightIcon}</View>
+            {outsideIcon}
+          </View>
         ) : null}
+
+        <View
+          className={cx(
+            compact ? 'min-h-[44px]' : 'min-h-[52px]',
+            'flex-1 flex-row items-center rounded-md border-[1.5px] px-md',
+            hasError
+              ? 'border-error bg-error-light'
+              : disabled
+                ? 'border-border bg-surface-subtle opacity-60'
+                : focused
+                  ? 'border-primary bg-surface'
+                  : isFilled
+                    ? 'border-text-muted bg-surface'
+                    : 'border-text-muted bg-surface-subtle'
+          )}
+        >
+          {leftIcon ? <View className="mr-sm">{leftIcon}</View> : null}
+
+          <TextInput
+            value={value}
+            onChangeText={onChangeText}
+            placeholder={placeholder}
+            placeholderTextColor={colors.textMuted}
+            selectionColor={colors.primary}
+            editable={!disabled}
+            secureTextEntry={isPassword && !passwordVisible}
+            accessibilityLabel={label}
+            accessibilityState={{ disabled }}
+            allowFontScaling
+            maxFontSizeMultiplier={1.3}
+            onFocus={(event) => {
+              setFocused(true);
+              onFocus?.(event);
+            }}
+            onBlur={(event) => {
+              setFocused(false);
+              onBlur?.(event);
+            }}
+            autoCapitalize="none"
+            className={cx(
+              'min-w-0 flex-1 bg-transparent py-sm font-sans',
+              compact ? 'text-sm' : 'text-md',
+              disabled ? 'text-text-muted' : 'text-text-primary',
+              inputClassName
+            )}
+            style={inputStyle}
+            {...props}
+          />
+
+          {canTogglePassword ? (
+            <Pressable
+              onPress={() => setPasswordVisible((visible) => !visible)}
+              hitSlop={4}
+              accessibilityRole="button"
+              accessibilityLabel={passwordVisible ? 'Hide password' : 'Show password'}
+              className="ml-sm h-11 w-11 items-center justify-center"
+            >
+              <Ionicons
+                name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
+                size={20}
+                color={colors.textMuted}
+              />
+            </Pressable>
+          ) : rightIcon ? (
+            <View className="ml-sm">{rightIcon}</View>
+          ) : null}
+        </View>
       </View>
 
       {hasError && errorMessage ? (
-        <Text
+        <AppText
+          variant="caption"
           accessibilityRole="alert"
-          className="mt-xs font-sans-medium text-xs text-error"
+          className="mt-xs font-sans-medium text-error"
         >
           {errorMessage}
-        </Text>
+        </AppText>
       ) : helperText ? (
-        <Text className="mt-xs font-sans text-xs text-text-secondary">{helperText}</Text>
+        <AppText variant="caption" className="mt-xs text-text-secondary">
+          {helperText}
+        </AppText>
       ) : null}
     </View>
   );

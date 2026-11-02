@@ -1,200 +1,171 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, Button, Card } from '../../src/components/ui';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Screen, AppText, Toast } from '../../src/components/ui';
+import { ASSETS } from '../../src/constants/assets';
 import { useAuthStore } from '../../src/store/authStore';
-import { colors, radius, spacing, typography } from '../../src/theme/tokens';
+import { colors, shadows } from '../../src/theme/tokens';
 
-export default function ProfileScreen() {
-  const router = useRouter();
-  const { user, signOut } = useAuthStore();
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.replace('/(auth)/welcome');
-  };
-
-  const displayName = user?.user_metadata?.full_name || 'Home Cook';
-  const displayEmail = user?.email || 'guest@whatchagot.app';
-
+function InfoRow({ icon, label, onPress, last = false }) {
   return (
-    <Screen scrollable style={styles.container}>
-      {/* Profile Card */}
-      <Card style={styles.profileHeaderCard} elevation="md">
-        <View style={styles.avatar}>
-          <Text style={styles.avatarEmoji}>👨‍🍳</Text>
-        </View>
-        <Text style={styles.userName}>{displayName}</Text>
-        <Text style={styles.userEmail}>{displayEmail}</Text>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>Free Plan • Kitchen Explorer</Text>
-        </View>
-      </Card>
-
-      {/* Settings & Shortcuts Menu */}
-      <View style={styles.menuSection}>
-        <Text style={styles.sectionHeader}>Preferences & Setup</Text>
-
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => router.push('/target-calorie')}
-          accessibilityRole="button"
-        >
-          <Text style={styles.menuIcon}>🎯</Text>
-          <View style={styles.menuTextContainer}>
-            <Text style={styles.menuTitle}>Calorie & Dietary Goals</Text>
-            <Text style={styles.menuSubtitle}>Adjust daily target & dietary restrictions</Text>
-          </View>
-          <Text style={styles.menuArrow}>›</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => router.push('/account-settings')}
-          accessibilityRole="button"
-        >
-          <Text style={styles.menuIcon}>⚙️</Text>
-          <View style={styles.menuTextContainer}>
-            <Text style={styles.menuTitle}>Account Settings</Text>
-            <Text style={styles.menuSubtitle}>Manage email, password, and security</Text>
-          </View>
-          <Text style={styles.menuArrow}>›</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => router.push('/share-recipe')}
-          accessibilityRole="button"
-        >
-          <Text style={styles.menuIcon}>📝</Text>
-          <View style={styles.menuTextContainer}>
-            <Text style={styles.menuTitle}>Share a Recipe</Text>
-            <Text style={styles.menuSubtitle}>Publish your own budget meal creation</Text>
-          </View>
-          <Text style={styles.menuArrow}>›</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* App Info & Sign out */}
-      <View style={styles.bottomSection}>
-        <Button
-          title="Log Out"
-          variant="outline"
-          size="md"
-          onPress={handleSignOut}
-          style={styles.logoutBtn}
-          textStyle={styles.logoutText}
-        />
-        <Text style={styles.versionText}>Whatcha Got? • Version 1.0.0</Text>
-      </View>
-    </Screen>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      className="min-h-[56px] flex-row items-center px-md py-sm"
+      style={!last ? { borderBottomWidth: 1, borderBottomColor: colors.border } : null}
+    >
+      <Image
+        source={icon}
+        contentFit="contain"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={{ width: 24, height: 24, tintColor: colors.textPrimary }}
+      />
+      <AppText variant="body" fontSize={17} className="ml-md flex-1">
+        {label}
+      </AppText>
+      <Image
+        source={ASSETS.icons.chevronForward}
+        contentFit="contain"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={{ width: 16, height: 16, tintColor: colors.textPrimary }}
+      />
+    </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-  },
-  profileHeaderCard: {
-    alignItems: 'center',
-    paddingVertical: spacing.xl,
-    marginBottom: spacing.lg,
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
-  },
-  avatarEmoji: {
-    fontSize: 42,
-  },
-  userName: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    marginBottom: 2,
-  },
-  userEmail: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  badge: {
-    backgroundColor: colors.surfaceSubtle,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.full,
-  },
-  badgeText: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textSecondary,
-    fontWeight: '600',
-  },
-  menuSection: {
-    marginBottom: spacing.xl,
-  },
-  sectionHeader: {
-    fontSize: typography.fontSize.xs,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: spacing.sm,
-    marginLeft: spacing.xs,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    borderRadius: radius.md,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  menuIcon: {
-    fontSize: 24,
-    marginRight: spacing.md,
-  },
-  menuTextContainer: {
-    flex: 1,
-  },
-  menuTitle: {
-    fontSize: typography.fontSize.md,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  menuSubtitle: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  menuArrow: {
-    fontSize: 22,
-    color: colors.textMuted,
-    fontWeight: '600',
-  },
-  bottomSection: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  logoutBtn: {
-    width: '100%',
-    borderColor: colors.error,
-    marginBottom: spacing.md,
-  },
-  logoutText: {
-    color: colors.error,
-  },
-  versionText: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textMuted,
-  },
-});
+function SectionCard({ children }) {
+  return (
+    <View
+      className="rounded-lg"
+      style={[{ borderWidth: 1, borderColor: 'transparent' }, shadows.sm]}
+    >
+      <LinearGradient
+        colors={[colors.surface, colors.mint]}
+        locations={[0, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={{ borderRadius: 16 }}
+      >
+        {children}
+      </LinearGradient>
+    </View>
+  );
+}
 
+export default function ProfileScreen() {
+  const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const [toast, setToast] = useState(null);
+
+  const username = user?.username || 'Nondiní';
+  const phone = user?.phone || '01xxxxxxxxx';
+
+  const showComingSoon = () => setToast({ type: 'info', message: 'Coming soon' });
+
+  const handleLogout = () => {
+    logout();
+    router.replace('/(auth)/welcome');
+  };
+
+  return (
+    <View className="flex-1">
+      <Screen
+        variant="cream"
+        scroll
+        padded={false}
+        contentContainerClassName="pb-xl"
+        statusBarStyle="dark-content"
+      >
+        <View className="px-md pt-sm">
+          <Pressable
+            onPress={() => router.push('/home-dashboard')}
+            accessibilityRole="button"
+            accessibilityLabel="Back to home"
+            className="h-11 w-11 items-start justify-center"
+          >
+            <Image
+              source={ASSETS.icons.undoBack}
+              contentFit="contain"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={{ width: 32, height: 32 }}
+            />
+          </Pressable>
+
+          <View className="mt-md flex-row items-center px-sm">
+            <View className="h-[72px] w-[72px] items-center justify-center rounded-full bg-surface">
+              <Image
+                source={ASSETS.icons.customerProfile}
+                contentFit="contain"
+                accessibilityLabel="Profile avatar"
+                style={{ width: 34, height: 34 }}
+              />
+            </View>
+            <View className="ml-lg flex-1">
+              <AppText variant="display" fontSize={28}>
+                {username}
+              </AppText>
+              <AppText variant="body" fontSize={16} className="mt-xs text-text-primary">
+                {phone}
+              </AppText>
+            </View>
+          </View>
+
+          <AppText variant="body" fontSize={17} className="mb-sm mt-lg px-sm">
+            Personal Information
+          </AppText>
+          <SectionCard>
+            <InfoRow
+              icon={ASSETS.icons.editPencil}
+              label="Change Account Info"
+              onPress={() => router.push('/account-settings')}
+            />
+            <InfoRow icon={ASSETS.icons.forwardArrow} label="Share Recipe" onPress={showComingSoon} />
+            <InfoRow
+              icon={ASSETS.icons.targetGoal}
+              label="Target Calorie"
+              onPress={showComingSoon}
+              last
+            />
+          </SectionCard>
+
+          <AppText variant="body" fontSize={17} className="mb-sm mt-xl px-sm">
+            Account Settings
+          </AppText>
+          <SectionCard>
+            <InfoRow
+              icon={ASSETS.icons.settingsSlider}
+              label="Food Preferences"
+              onPress={showComingSoon}
+            />
+            <InfoRow icon={ASSETS.icons.nightMode} label="Theme" onPress={showComingSoon} />
+            <InfoRow icon={ASSETS.icons.language} label="App Language" onPress={showComingSoon} />
+            <InfoRow
+              icon={ASSETS.icons.termsAndConditions}
+              label="Terms and Conditions"
+              onPress={showComingSoon}
+            />
+            <InfoRow
+              icon={ASSETS.icons.logout}
+              label="Log Out / Sign Out"
+              onPress={handleLogout}
+              last
+            />
+          </SectionCard>
+        </View>
+      </Screen>
+
+      {toast ? (
+        <View className="absolute left-md right-md top-xxl">
+          <Toast type={toast.type} message={toast.message} onDismiss={() => setToast(null)} />
+        </View>
+      ) : null}
+    </View>
+  );
+}

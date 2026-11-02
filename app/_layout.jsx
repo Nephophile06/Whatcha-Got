@@ -45,15 +45,8 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="account-settings"
-          options={{
-            headerShown: true,
-            title: 'Account Settings',
-            headerTintColor: colors.textPrimary,
-            headerStyle: { backgroundColor: colors.surface },
-          }}
-        />
+        <Stack.Screen name="home-loading" options={{ headerShown: false, animation: 'fade' }} />
+        <Stack.Screen name="home-dashboard" options={{ headerShown: false }} />
         <Stack.Screen
           name="share-recipe"
           options={{

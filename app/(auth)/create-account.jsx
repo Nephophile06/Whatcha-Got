@@ -1,32 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  View,
-  Text,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import { View, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { Screen, Input, Button, Toast } from '../../src/components/ui';
+import { Screen, AppText, Input, Button, Toast } from '../../src/components/ui';
 import { ASSETS } from '../../src/constants/assets';
 import { colors } from '../../src/theme/tokens';
+import { useScale } from '../../src/lib/scale';
 
-function FormRow({ icon, iconNode, children }) {
-  return (
-    <View className="flex-row items-center">
-      {iconNode ? (
-        <View className="h-[34px] w-[34px] items-center justify-center">{iconNode}</View>
-      ) : (
-        <Image source={icon} contentFit="contain" style={{ width: 34, height: 34 }} />
-      )}
-      <View className="ml-md flex-1 pr-lg">{children}</View>
-    </View>
-  );
-}
-
+/**
+ * Create Account — proportions from design/screens/create-account.png.
+ * The mascots are passed as `outsideIcon`, so Input centres each one on the
+ * field box itself (not on label + field). Flexible spacers distribute the
+ * surplus height on tall 20:9 devices instead of leaving it all at the bottom.
+ */
 export default function CreateAccountScreen() {
   const router = useRouter();
+  const { width } = useScale();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,6 +24,7 @@ export default function CreateAccountScreen() {
   const [loading, setLoading] = useState(false);
   const [showGoogleToast, setShowGoogleToast] = useState(false);
   const timerRef = useRef(null);
+  const formWidth = Math.min(width * 0.84, 360);
 
   useEffect(() => {
     return () => {
@@ -96,17 +87,21 @@ export default function CreateAccountScreen() {
         variant="blue"
         scroll
         padded={false}
-        contentContainerClassName="pb-xxl"
+        contentContainerClassName="flex-grow pb-xxl"
         statusBarStyle="dark-content"
       >
-        <View className="flex-row items-start justify-between px-xxl pt-xl">
-          <View className="mt-md pl-lg">
-            <Text className="font-display text-hero text-text-primary">Hello!!</Text>
+        <View className="flex-row items-start justify-between px-xl pt-md">
+          <View className="mt-sm">
+            <AppText variant="display" fontSize={34}>
+              Hello!!
+            </AppText>
             <Image
               source={ASSETS.illustrations.helloKaomoji}
               contentFit="contain"
               accessibilityLabel="Happy cat face"
-              style={{ width: 118, height: 25, marginTop: 4 }}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={{ width: 112, height: 24, marginTop: 4 }}
             />
           </View>
 
@@ -114,91 +109,112 @@ export default function CreateAccountScreen() {
             source={ASSETS.illustrations.catChefWhisking}
             contentFit="contain"
             accessibilityLabel="Cat chef whisking a bowl"
-            style={{ width: 84, height: 108 }}
+            style={{ width: 78, height: 96 }}
           />
         </View>
 
-        <Text className="mt-xl px-lg text-center font-sans text-lg leading-6 text-text-primary">
-          {"It's no fun eating alone!\n"}
-          {"We're whisking up something sweet...\n"}
-          {'Sign up so we can taste test together!'}
-        </Text>
+        <AppText
+          variant="body"
+          className="mt-lg self-center px-lg text-center text-text-primary"
+          style={{ maxWidth: Math.min(width * 0.84, 340) }}
+        >
+          {"It's no fun eating alone! We're whisking up something sweet... Sign up so we can taste test together!"}
+        </AppText>
 
-        <View className="mt-xl pl-xxl pr-xxl">
-          <FormRow icon={ASSETS.illustrations.cuteBunny}>
-            <Input
-              compact
-              label="Username"
-              placeholder="unique username"
-              value={username}
-              onChangeText={(value) => {
-                setUsername(value);
-                clearError('username');
-              }}
-              error={errors.username}
-              autoCapitalize="none"
-              autoComplete="username"
-              textContentType="username"
-            />
-          </FormRow>
+        <View className="flex-grow" style={{ minHeight: 16 }} />
 
-          <FormRow
-            iconNode={<Ionicons name="mail-outline" size={28} color={colors.info} />}
-          >
-            <Input
-              compact
-              label="Email"
-              placeholder="you@example.com"
-              value={email}
-              onChangeText={(value) => {
-                setEmail(value);
-                clearError('email');
-              }}
-              error={errors.email}
-              keyboardType="email-address"
-              autoComplete="email"
-              textContentType="emailAddress"
-            />
-          </FormRow>
+        <View className="w-full self-center px-lg" style={{ maxWidth: formWidth }}>
+          <Input
+            compact
+            label="Username"
+            placeholder="unique username"
+            value={username}
+            onChangeText={(value) => {
+              setUsername(value);
+              clearError('username');
+            }}
+            error={errors.username}
+            autoCapitalize="none"
+            autoComplete="username"
+            textContentType="username"
+            outsideIcon={
+              <Image
+                source={ASSETS.illustrations.cuteBunny}
+                contentFit="contain"
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                style={{ width: 34, height: 34 }}
+              />
+            }
+          />
 
-          <FormRow icon={ASSETS.illustrations.thinkingCat}>
-            <Input
-              compact
-              label="Password"
-              placeholder="min 8 characters"
-              value={password}
-              onChangeText={(value) => {
-                setPassword(value);
-                clearError('password');
-              }}
-              error={errors.password}
-              secure
-              autoComplete="new-password"
-              textContentType="newPassword"
-            />
-          </FormRow>
+          <Input
+            compact
+            label="Email"
+            placeholder="you@example.com"
+            value={email}
+            onChangeText={(value) => {
+              setEmail(value);
+              clearError('email');
+            }}
+            error={errors.email}
+            keyboardType="email-address"
+            autoComplete="email"
+            textContentType="emailAddress"
+            outsideIcon={<Ionicons name="mail-outline" size={26} color={colors.info} />}
+          />
+
+          <Input
+            compact
+            label="Password"
+            placeholder="min 8 characters"
+            value={password}
+            onChangeText={(value) => {
+              setPassword(value);
+              clearError('password');
+            }}
+            error={errors.password}
+            secure
+            autoComplete="new-password"
+            textContentType="newPassword"
+            outsideIcon={
+              <Image
+                source={ASSETS.illustrations.thinkingCat}
+                contentFit="contain"
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                style={{ width: 30, height: 30 }}
+              />
+            }
+          />
 
           <Button
             title="Purr-fect!"
             size="md"
             loading={loading}
             onPress={handleSubmit}
-            className="mt-md"
+            className="mt-sm"
           />
         </View>
 
-        <View className="mt-lg flex-row items-center px-xl">
+        <View className="flex-grow" style={{ minHeight: 16 }} />
+
+        <View className="mt-md flex-row items-center px-xl">
           <View className="h-px flex-1 bg-text-muted opacity-40" />
-          <Text className="mx-md font-sans text-md text-text-muted">or</Text>
+          <AppText variant="body" className="mx-md text-text-muted">
+            or
+          </AppText>
           <View className="h-px flex-1 bg-text-muted opacity-40" />
         </View>
 
-        <View className="mt-lg flex-row items-center justify-center px-md">
+        <View className="mt-md flex-row items-center justify-center px-md">
           <Image
             source={ASSETS.illustrations.cookieDoughBowl}
             contentFit="contain"
             accessibilityLabel="Bowl of cookie dough"
-            style={{ width: 68, height: 62 }}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            style={{ width: 64, height: 58 }}
           />
           <Button
             title="continue with google"

@@ -14,10 +14,11 @@
  * - className / style / textStyle
  */
 import React, { useState } from 'react';
-import { Pressable, Text, ActivityIndicator } from 'react-native';
+import { Pressable, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { ASSETS } from '../../constants/assets';
 import { colors } from '../../theme/tokens';
+import { AppText } from './AppText';
 import { cx } from './cx';
 
 const VARIANT_ALIASES = {
@@ -59,9 +60,9 @@ const SIZE = {
 };
 
 const TEXT_SIZE = {
-  sm: 'text-sm',
-  md: 'text-md',
-  lg: 'text-lg',
+  sm: 14,
+  md: 16,
+  lg: 18,
 };
 
 export function Button({
@@ -119,7 +120,7 @@ export function Button({
         onPressOut?.(event);
       }}
       className={cx(
-        'flex-row items-center justify-center gap-sm rounded-md border-[1.5px]',
+        'max-w-full flex-row items-center justify-center gap-sm rounded-md border-[1.5px]',
         SIZE[size],
         CONTAINER[resolvedVariant],
         pressed && !isDisabled && CONTAINER_PRESSED[resolvedVariant],
@@ -136,18 +137,14 @@ export function Button({
         <>
           {resolvedIcon}
           {title ? (
-            <Text
-              numberOfLines={1}
-              className={cx(
-                'shrink text-center font-sans-medium',
-                TEXT_SIZE[size],
-                LABEL[resolvedVariant],
-                textClassName
-              )}
+            <AppText
+              variant="button"
+              fontSize={TEXT_SIZE[size]}
+              className={cx('shrink text-center', LABEL[resolvedVariant], textClassName)}
               style={textStyleObject}
             >
               {title}
-            </Text>
+            </AppText>
           ) : null}
         </>
       )}

@@ -65,7 +65,7 @@ export default function ShareRecipeScreen() {
   };
 
   return (
-    <Screen scrollable style={styles.container}>
+    <Screen scroll style={styles.container}>
       <Toast
         visible={!!error}
         type="error"
