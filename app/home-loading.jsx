@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
 import { Screen, Stage } from '../src/components/ui';
 import { ASSETS } from '../src/constants/assets';
@@ -13,15 +13,18 @@ import L from '../src/layouts/home-loading';
  */
 export default function HomeLoadingScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { W, H, fx, fy, s } = useStage();
 
+  // `?freeze=1` keeps the screen still for the dev fidelity capture.
   useEffect(() => {
+    if (params.freeze === '1') return undefined;
     const timeout = setTimeout(() => router.replace('/home-dashboard'), 1200);
     return () => clearTimeout(timeout);
-  }, [router]);
+  }, [router, params.freeze]);
 
   return (
-    <Screen variant="mintPage" padded={false} edges={[]} statusBarStyle="dark-content">
+    <Screen variant="mintWash" padded={false} edges={[]} statusBarStyle="dark-content">
       <Stage>
         <View
           style={{ width: W, minHeight: H }}

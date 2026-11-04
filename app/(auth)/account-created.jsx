@@ -1,12 +1,12 @@
 import React from 'react';
 import { View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Screen, Stage, AppText, Button } from '../../src/components/ui';
 import { ASSETS } from '../../src/constants/assets';
 import { colors, spacing } from '../../src/theme/tokens';
-import { useStage } from '../../src/lib/stage';
+import { clamp, useStage } from '../../src/lib/stage';
 import L from '../../src/layouts/account-created';
 
 let LottieView;
@@ -18,47 +18,67 @@ try {
 
 /**
  * The Create Account form, dimmed to 40% and repeated behind the success
- * panel. Rendered from absolute Figma rects so nothing re-flows.
+ * panel. Rendered from absolute Figma rects so nothing re-flows. Text is black
+ * inside the 40% group (the PNG's dimmed ink is #989898); the hairline fields
+ * are black too, which lands them at the PNG's #919498 on white.
  */
 function SignupBackdrop() {
-  const { W, H, fx, fy, s, offsetX } = useStage();
+  const { W, H, fx, fy, s, u, offsetX } = useStage();
   const B = L.backdrop;
 
-  const field = (y, icon, placeholder) => (
-    <React.Fragment key={placeholder}>
-      <Image
-        source={icon}
-        contentFit="contain"
-        style={{
-          position: 'absolute',
-          left: fx(B.fieldBox.x - B.iconOffset),
-          top: fy(y + (B.fieldBox.h - B.iconSize) / 2),
-          width: s(B.iconSize),
-          height: s(B.iconSize),
-        }}
-      />
-      <View
-        style={{
-          position: 'absolute',
-          left: fx(B.fieldBox.x),
-          top: fy(y),
-          width: fx(B.fieldBox.w),
-          height: s(B.fieldBox.h),
-          justifyContent: 'center',
-          paddingHorizontal: s(12),
-        }}
-        className="rounded-md border-[1.5px] border-border"
-      >
-        <AppText variant="caption" numberOfLines={1} className="text-text-muted">
-          {placeholder}
-        </AppText>
-      </View>
-    </React.Fragment>
-  );
+  const field = (index) => {
+    const top = B.form.y + index * B.form.step;
+    const art = B.fields[index];
+    return (
+      <React.Fragment key={art.key}>
+        <Image
+          source={
+            index === 0 ? ASSETS.illustrations.cuteBunny : ASSETS.illustrations.thinkingCat
+          }
+          contentFit="contain"
+          style={{
+            position: 'absolute',
+            left: fx(B.form.x + art.x),
+            top: fy(top + art.y),
+            width: s(art.w),
+            height: s(art.h),
+          }}
+        />
+        <View
+          style={{
+            position: 'absolute',
+            left: fx(B.form.fieldX),
+            top: fy(top),
+            width: fx(B.form.fieldW),
+            minHeight: s(B.form.fieldH),
+            justifyContent: 'center',
+            paddingHorizontal: s(11.5),
+            backgroundColor: 'transparent',
+            borderWidth: 1,
+            borderColor: colors.black,
+            borderRadius: s(6),
+          }}
+        >
+          <AppText
+            variant="body"
+            fontSize={14}
+            numberOfLines={1}
+            className="text-text-muted"
+          >
+            {index === 0
+              ? 'give yourself a unique username'
+              : 'password [minimum 5 char/letter]'}
+          </AppText>
+        </View>
+      </React.Fragment>
+    );
+  };
 
   return (
     <View
       pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
       style={{
         position: 'absolute',
         left: offsetX,
@@ -72,7 +92,13 @@ function SignupBackdrop() {
         variant="display"
         fontSize={B.hello.size}
         numberOfLines={1}
-        style={{ position: 'absolute', left: fx(B.hello.x), top: fy(B.hello.y) }}
+        className="text-black"
+        style={{
+          position: 'absolute',
+          left: fx(B.hello.x),
+          top: fy(B.hello.y),
+          letterSpacing: s(B.hello.letterSpacing),
+        }}
       >
         Hello!!
       </AppText>
@@ -102,27 +128,24 @@ function SignupBackdrop() {
       <AppText
         variant="body"
         fontSize={B.copy.size}
-        className="text-center text-text-primary"
+        className="text-center text-black"
         style={{
           position: 'absolute',
           left: fx(B.copy.x),
           top: fy(B.copy.y),
           width: fx(B.copy.w),
+          // Decorative mirror of the form: scale with the stage (not the 0.85
+          // text floor) so the three fixed lines never wrap into the fields.
+          fontSize: B.copy.size * u,
+          lineHeight: s(B.copy.lineHeight),
+          letterSpacing: s(B.copy.letterSpacing),
         }}
       >
-        {"It's no fun eating alone! We're whisking up something sweet... Sign up so we can taste test together!"}
+        {"It's no fun eating alone!\nWe're whisking up something sweet...\nSign up so we can taste test together!"}
       </AppText>
 
-      {field(
-        B.fieldBox.y,
-        ASSETS.illustrations.cuteBunny,
-        'give yourself a unique username'
-      )}
-      {field(
-        B.fieldBox.y + B.fieldStep,
-        ASSETS.illustrations.thinkingCat,
-        'password [minimum 5 char/letter]'
-      )}
+      {field(0)}
+      {field(1)}
 
       <View
         style={{
@@ -130,11 +153,18 @@ function SignupBackdrop() {
           left: fx(B.button.x),
           top: fy(B.button.y),
           width: fx(B.button.w),
-          height: s(B.button.h),
+          minHeight: s(B.button.h),
+          borderRadius: s(B.button.radius),
         }}
-        className="items-center justify-center rounded-md bg-primary"
+        className="items-center justify-center bg-primary"
       >
-        <AppText variant="button" numberOfLines={1} className="text-text-inverse">
+        <AppText
+          variant="button"
+          fontSize={B.button.size}
+          numberOfLines={1}
+          className="text-text-inverse"
+          style={{ letterSpacing: s(B.copy.letterSpacing) }}
+        >
           Purr-fect!
         </AppText>
       </View>
@@ -145,13 +175,19 @@ function SignupBackdrop() {
 /**
  * Account Created — a wide burgundy ellipse rises above the dimmed signup form.
  * The ellipse clips its own gradient (overflow hidden) so Android gets the same
- * curved dome as the PNG instead of a flat edge.
+ * curved dome as the PNG instead of a flat edge. Stops are sampled from the
+ * PNG over the visible 339px (the rest of the 900px circle is off-screen).
  */
 export default function AccountCreatedScreen() {
   const router = useRouter();
-  const { W, H, fy, s, offsetX } = useStage();
+  const params = useLocalSearchParams();
+  // `?freeze=1` keeps the bunny still for the dev fidelity capture.
+  const frozen = params.freeze === '1';
+  const { W, H, fy, s, u, offsetX } = useStage();
   const domeWidth = s(L.dome.w);
   const domeHeight = s(L.dome.h);
+
+  const stop = (y) => (y - L.dome.y) / L.dome.h;
 
   const background = (
     <View style={{ flex: 1 }}>
@@ -170,8 +206,13 @@ export default function AccountCreatedScreen() {
         }}
       >
         <LinearGradient
-          colors={[colors.primaryGlow, colors.primary, colors.primaryDeep]}
-          locations={[0, 0.22, 0.37]}
+          colors={[
+            colors.domeTop,
+            colors.domeMid,
+            colors.domeBottom,
+            colors.domeBottom,
+          ]}
+          locations={[0, stop(740), stop(917), 1]}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
           style={{ flex: 1 }}
@@ -201,8 +242,9 @@ export default function AccountCreatedScreen() {
             {LottieView ? (
               <LottieView
                 source={ASSETS.animations.bunnyAndChicks}
-                autoPlay
-                loop
+                autoPlay={!frozen}
+                loop={!frozen}
+                progress={frozen ? 0 : undefined}
                 style={{ width: '100%', height: '100%' }}
                 accessibilityLabel="White bunny with chicks"
               />
@@ -217,10 +259,7 @@ export default function AccountCreatedScreen() {
             minimumFontScale={0.85}
             className="self-center text-center text-text-inverse"
             style={{
-              marginTop: Math.max(
-                fy(L.title.y - (L.bunny.y + L.bunny.h)),
-                spacing.xs
-              ),
+              marginTop: fy(L.title.y - (L.bunny.y + L.bunny.h)),
               paddingHorizontal: s(16),
             }}
           >
@@ -242,17 +281,22 @@ export default function AccountCreatedScreen() {
           <Button
             title="take me home"
             variant="light"
-            size="sm"
+            size="md"
             onPress={() => router.replace('/home-loading')}
             style={{
               alignSelf: 'center',
               marginTop: fy(L.button.y - (L.body.y + L.body.h)),
-              minWidth: s(L.button.w),
+              width: s(L.button.w),
               minHeight: s(L.button.h),
+              borderRadius: s(L.button.radius),
+              paddingHorizontal: 0,
+              paddingTop: s(4),
+            }}
+            textStyle={{
+              fontSize: L.button.size * clamp(u, 0.85, 1.2),
+              letterSpacing: s(L.button.letterSpacing),
             }}
           />
-
-          <View style={{ flexGrow: 1, minHeight: s(8) }} />
         </View>
       </Stage>
     </Screen>

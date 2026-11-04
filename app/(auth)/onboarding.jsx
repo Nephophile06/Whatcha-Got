@@ -33,12 +33,18 @@ export default function OnboardingScreen() {
     >
       <Stage>
         <View style={{ width: W, minHeight: H }}>
-          <View style={{ width: '100%', height: fy(L.hero.h), overflow: 'hidden' }}>
+          <View
+            style={{
+              width: '100%',
+              height: Math.max(fy(L.hero.h), s(L.hero.imgH)),
+              overflow: 'hidden',
+            }}
+          >
             <Image
               source={ASSETS.images.onboardingHero}
               contentFit="cover"
               accessibilityLabel="Wraps served on a wooden board"
-              style={{ width: '100%', height: '100%' }}
+              style={{ width: '100%', height: s(L.hero.imgH) }}
             />
           </View>
 
@@ -55,6 +61,7 @@ export default function OnboardingScreen() {
               adjustsFontSizeToFit
               minimumFontScale={L.title.minScale ?? 0.85}
               className="text-center"
+              style={{ lineHeight: s(L.title.lineHeight) }}
             >
               Whatcha Got?
             </AppText>
@@ -63,16 +70,17 @@ export default function OnboardingScreen() {
           <View
             style={{
               marginTop: fy(L.body.y - (L.title.y + L.title.h)),
-              marginHorizontal: fx(L.body.x),
+              paddingHorizontal: fx(24),
             }}
           >
             <AppText
               variant="body"
               fontSize={L.body.size}
               className="text-center text-text-primary"
+              style={{ lineHeight: s(L.body.lineHeight) }}
             >
-              Helps you cook smarter using the ingredients you already have. Get quick
-              recipes, smart suggestions, and healthy calorie plans.
+              {"Helps you cook smarter using the\ningredients you already have. Get quick\nrecipes, smart suggestions, and healthy\ncalorie plans."}
+
             </AppText>
           </View>
 
@@ -83,7 +91,7 @@ export default function OnboardingScreen() {
               onPress={handleGetStarted}
               style={{
                 alignSelf: 'center',
-                minWidth: s(L.cta.w),
+                paddingHorizontal: s(28),
                 minHeight: s(L.cta.h),
               }}
             />

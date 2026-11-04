@@ -21,6 +21,16 @@ export const ASSETS = {
     cravingsHeroBanner: require('../../assets/images/cravings-hero-banner.png'),
     loginBadge: require('../../assets/images/login-badge.png'),
     forgotPasswordBadge: require('../../assets/images/forgot-password-badge.png'),
+    // Forgot-password art was not exported separately: the watercolour wash and
+    // the chick/bunny illustration (plus both card icons) were cropped from the
+    // 3x design PNG, since the Lottie and the Ionicons do not match the frame.
+    forgotPasswordArt: require('../../assets/images/forgot-password-art.png'),
+    forgotEmailIcon: require('../../assets/images/forgot-email-icon.png'),
+    forgotPhoneIcon: require('../../assets/images/forgot-phone-icon.png'),
+    // OTP page wash (pink with a white centre glow) reconstructed from clean
+    // cells of otp-verification.png: the design wash is a radial glow, which a
+    // linear gradient cannot reproduce. 1236×2751 = 3× the 412×917 frame.
+    otpPageWash: require('../../assets/images/otp-page-wash.png'),
     peeledBanana: require('../../assets/images/peeled-banana.png'),
     twoCherries: require('../../assets/images/two-cherries.png'),
 
@@ -68,6 +78,9 @@ export const ASSETS = {
     list: require('../../assets/icons/bulleted-list.png'),
     favorites: require('../../assets/icons/heart-favorites.png'),
     profile: require('../../assets/icons/customer-profile.png'),
+    // Active Profile glyph cropped from profile.png: the designer's dark person
+    // with the burgundy smile arc (no separate export exists for this state).
+    profileActive: require('../../assets/icons/profile-tab-active.png'),
   },
   illustrations: {
     catChefWhisking: require('../../assets/illustrations/cat-chef-whisking.png'),

@@ -4,25 +4,25 @@ import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Screen, Stage, AppText, Button } from '../../src/components/ui';
 import { ASSETS } from '../../src/constants/assets';
-import { useStage } from '../../src/lib/stage';
+import { useStage, clamp } from '../../src/lib/stage';
 import { colors, radius, shadows, spacing } from '../../src/theme/tokens';
 import L from '../../src/layouts/welcome';
 
 /**
  * Welcome — the photo fills the top 605px, the burgundy panel starts at 514px
- * and the content follows the PNG bands (copy 586, tagline 656, Signup 735,
+ * and the content follows the PNG bands (copy 576, tagline 661, Signup 734,
  * Login 804). Art layers are full-bleed; text sits in the capped stage column.
  */
 export default function WelcomeScreen() {
   const router = useRouter();
-  const { W, H, fy, fx, s, offsetX } = useStage();
+  const { W, H, fy, fx, s, u, offsetX } = useStage();
 
   const background = (
     <>
       <Image
         source={ASSETS.images.chickenRoastPolao}
         contentFit="cover"
-        style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: fy(L.photo.h) }}
+        style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: s(L.photo.imgH) }}
       />
 
       <View
@@ -48,7 +48,6 @@ export default function WelcomeScreen() {
             height: s(L.almonds.h),
             borderRadius: radius.full,
             overflow: 'hidden',
-            backgroundColor: colors.surface,
           },
           shadows.lg,
         ]}
@@ -56,7 +55,15 @@ export default function WelcomeScreen() {
         <Image
           source={ASSETS.images.almonds}
           contentFit="cover"
-          style={{ width: '100%', height: '100%' }}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          style={{
+            position: 'absolute',
+            left: s(L.almonds.imgX),
+            top: s(L.almonds.imgY),
+            width: s(L.almonds.imgW),
+            height: s(L.almonds.imgH),
+          }}
         />
       </View>
     </>
@@ -77,6 +84,7 @@ export default function WelcomeScreen() {
               variant="body"
               fontSize={L.copy.size}
               className="text-center text-text-inverse"
+              style={{ lineHeight: s(L.copy.lineHeight) }}
             >
               Yay, you made it!{'\n'}A huge welcome to our family ^_^{'\n'}
               Craving something?
@@ -93,6 +101,7 @@ export default function WelcomeScreen() {
               variant="body"
               fontSize={L.tagline.size}
               className="text-center text-text-inverse"
+              style={{ lineHeight: s(L.tagline.lineHeight) }}
             >
               Show us Whatcha Got, we'll do the math!
             </AppText>
@@ -101,7 +110,6 @@ export default function WelcomeScreen() {
           <View
             style={{
               marginTop: fy(L.button.y - (L.tagline.y + L.tagline.h)),
-              alignItems: 'center',
             }}
           >
             <Button
@@ -110,10 +118,15 @@ export default function WelcomeScreen() {
               size="md"
               onPress={() => router.push('/(auth)/create-account')}
               style={{
+                alignSelf: 'flex-start',
+                marginLeft: fx(L.button.x),
                 minWidth: s(L.button.w),
                 minHeight: s(L.button.h),
               }}
-              textStyle={{ color: colors.primary }}
+              textStyle={{
+                color: colors.primary,
+                fontSize: L.button.size * clamp(u, 0.85, 1.2),
+              }}
             />
           </View>
 
@@ -123,18 +136,25 @@ export default function WelcomeScreen() {
             accessibilityLabel="Already have an account? Login"
             style={{
               marginTop: fy(L.login.y - (L.button.y + L.button.h)),
-              marginHorizontal: fx(L.login.x),
+              marginLeft: fx(L.login.x),
+              marginRight: fx(L.frame.w - L.login.x - L.login.w),
               minHeight: Math.max(s(L.login.h), 44),
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <AppText variant="body" fontSize={L.login.size} className="text-center text-text-inverse">
+            <AppText
+              variant="body"
+              fontSize={L.login.size}
+              className="text-center text-text-inverse"
+              style={{ lineHeight: s(L.login.lineHeight) }}
+            >
               Already have an account?{' '}
               <AppText
                 variant="body"
                 fontSize={L.login.size}
                 className="font-sans-semibold text-text-inverse underline"
+                style={{ lineHeight: s(L.login.lineHeight) }}
               >
                 Login
               </AppText>

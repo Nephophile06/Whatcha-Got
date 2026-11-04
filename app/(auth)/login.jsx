@@ -4,25 +4,31 @@ import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Screen, Stage, AppText, Input, Button, Toast } from '../../src/components/ui';
 import { ASSETS } from '../../src/constants/assets';
+import { colors } from '../../src/theme/tokens';
 import { useAuthStore } from '../../src/store/authStore';
-import { useStage } from '../../src/lib/stage';
+import { clamp, useStage } from '../../src/lib/stage';
 import L from '../../src/layouts/login';
 
 /**
- * Login — bands from design/screens/login.png (title 150, copy 210, form 273,
- * forgot 441, CTA 497, divider 561, Google 594, create-account 634, duck 676).
- * The PNG labels the first field "your sweet username"; we use an Email label
- * because the future Supabase flow is email + password.
+ * Login — measured from design/screens/login.png (412 x 917).
+ * Transparent hairline fields at x113.2 (249.4 x 44, 84 step) with the art
+ * outside the box, centred CTA / divider / Google, and the chef duck anchored
+ * 52px above the bottom edge. The PNG labels the first field "your sweet
+ * username"; we keep that copy but validate it as an email for the future
+ * Supabase flow. There is no create-account link in the design (Welcome owns
+ * sign-up), so the screen ends after the Google button.
  */
 export default function LoginScreen() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
-  const { W, H, fx, fy, s } = useStage();
+  const { W, H, fx, fy, s, u } = useStage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
+
+  const scaled = (size) => Math.round(size * clamp(u, 0.85, 1.2) * 100) / 100;
 
   const clearError = (field) =>
     setErrors((current) => (current[field] ? { ...current, [field]: null } : current));
@@ -57,6 +63,15 @@ export default function LoginScreen() {
 
     router.replace('/home-loading');
   };
+
+  const fieldBox = (hasError) => ({
+    minHeight: s(L.field.h),
+    borderRadius: s(L.field.radius),
+    borderWidth: L.field.border,
+    borderColor: hasError ? colors.error : colors.fieldLine,
+    backgroundColor: 'transparent',
+    paddingHorizontal: s(L.field.padH),
+  });
 
   return (
     <KeyboardAvoidingView
@@ -98,6 +113,33 @@ export default function LoginScreen() {
               }}
             />
 
+            <Image
+              source={ASSETS.illustrations.cuteBunny}
+              contentFit="contain"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={{
+                position: 'absolute',
+                left: fx(L.icons.bunny.x),
+                top: fy(L.icons.bunny.y),
+                width: s(L.icons.bunny.w),
+                height: s(L.icons.bunny.h),
+              }}
+            />
+            <Image
+              source={ASSETS.illustrations.thinkingCat}
+              contentFit="contain"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={{
+                position: 'absolute',
+                left: fx(L.icons.cat.x),
+                top: fy(L.icons.cat.y),
+                width: s(L.icons.cat.w),
+                height: s(L.icons.cat.h),
+              }}
+            />
+
             <View style={{ paddingTop: fy(L.title.y), paddingLeft: fx(L.title.x) }}>
               <AppText
                 variant="display"
@@ -105,6 +147,7 @@ export default function LoginScreen() {
                 numberOfLines={L.title.lines}
                 adjustsFontSizeToFit
                 minimumFontScale={0.85}
+                className="text-black"
                 style={{ width: fx(L.title.w) }}
               >
                 Welcome Back!
@@ -114,27 +157,24 @@ export default function LoginScreen() {
             <AppText
               variant="body"
               fontSize={L.copy.size}
-              className="text-text-primary"
+              className="text-black"
               style={{
                 marginTop: fy(L.copy.y - (L.title.y + L.title.h)),
                 marginLeft: fx(L.copy.x),
                 width: fx(L.copy.w),
+                lineHeight: scaled(L.copy.size) * L.copy.lineH,
               }}
             >
               {"We missed you :(\nLet's get back into your world of flavors."}
             </AppText>
 
-            <View
-              style={{
-                marginTop: fy(L.form.y - (L.copy.y + L.copy.h)),
-                marginLeft: fx(L.form.x),
-                width: fx(L.form.w),
-              }}
-            >
+            <View style={{ marginTop: fy(L.form.y - (L.copy.y + L.copy.h)) }}>
               <Input
                 compact
-                label="Email"
-                placeholder="your sweet email"
+                flush
+                accessibilityLabel="Username"
+                placeholder="your sweet username"
+                placeholderTextColor={colors.fieldLine}
                 value={email}
                 onChangeText={(value) => {
                   setEmail(value);
@@ -144,21 +184,16 @@ export default function LoginScreen() {
                 keyboardType="email-address"
                 autoComplete="email"
                 textContentType="emailAddress"
-                outsideIcon={
-                  <Image
-                    source={ASSETS.illustrations.cuteBunny}
-                    contentFit="contain"
-                    accessibilityElementsHidden
-                    importantForAccessibility="no-hide-descendants"
-                    style={{ width: s(34), height: s(34) }}
-                  />
-                }
+                style={{ marginLeft: fx(L.field.x), width: fx(L.field.w) }}
+                boxStyle={fieldBox(Boolean(errors.email))}
               />
 
               <Input
                 compact
-                label="Password"
+                flush
+                accessibilityLabel="Password"
                 placeholder="secret password ^_^"
+                placeholderTextColor={colors.fieldLine}
                 value={password}
                 onChangeText={(value) => {
                   setPassword(value);
@@ -166,27 +201,35 @@ export default function LoginScreen() {
                 }}
                 error={errors.password}
                 secure
+                showPasswordToggle={false}
                 autoComplete="current-password"
                 textContentType="password"
-                outsideIcon={
-                  <Image
-                    source={ASSETS.illustrations.thinkingCat}
-                    contentFit="contain"
-                    accessibilityElementsHidden
-                    importantForAccessibility="no-hide-descendants"
-                    style={{ width: s(30), height: s(30) }}
-                  />
-                }
+                style={{
+                  marginLeft: fx(L.field.x),
+                  marginTop: fy(L.field.step - L.field.h),
+                  width: fx(L.field.w),
+                }}
+                boxStyle={fieldBox(Boolean(errors.password))}
               />
 
               <Pressable
                 onPress={() => router.push('/(auth)/forgot-password')}
                 accessibilityRole="link"
                 accessibilityLabel="I forgot my password"
-                className="justify-start"
-                style={{ minHeight: Math.max(s(44), 44), alignItems: 'flex-end' }}
+                style={{
+                  alignSelf: 'flex-end',
+                  marginTop: fy(L.forgot.top - (L.form.y + L.field.step + L.field.h)),
+                  marginRight: fx(L.forgot.right),
+                  minHeight: L.forgot.lineH,
+                  justifyContent: 'center',
+                }}
               >
-                <AppText variant="label" fontSize={L.forgot.size} className="text-text-secondary underline">
+                <AppText
+                  variant="body"
+                  fontSize={L.forgot.size}
+                  className="underline"
+                  style={{ color: colors.fieldLine, letterSpacing: s(-0.1) }}
+                >
                   I forgot my password T.T
                 </AppText>
               </Pressable>
@@ -198,56 +241,78 @@ export default function LoginScreen() {
                 onPress={handleLogin}
                 style={{
                   alignSelf: 'center',
-                  marginTop: fy(L.button.y - (L.forgot.y + 44)),
-                  minWidth: s(L.button.w),
-                  minHeight: Math.max(s(L.button.h), 44),
+                  marginTop: fy(L.button.y - (L.forgot.top + L.forgot.lineH)),
+                  width: s(L.button.w),
+                  minHeight: s(L.button.h),
+                  borderRadius: s(L.button.radius),
+                  paddingHorizontal: 0,
+                }}
+                textStyle={{
+                  fontSize: scaled(L.button.size),
+                  lineHeight: scaled(L.button.size) * 1.35,
                 }}
               />
 
               <View
                 style={{
                   marginTop: fy(L.divider.y - (L.button.y + L.button.h)),
+                  alignSelf: 'center',
                   width: fx(L.divider.w),
                   minHeight: fy(L.divider.rowH),
-                  alignSelf: 'center',
                 }}
                 className="flex-row items-center"
               >
-                <View className="h-px flex-1 bg-text-muted opacity-40" />
-                <AppText variant="body" className="mx-md text-text-muted">
+                <View
+                  className="h-px flex-1"
+                  style={{ backgroundColor: colors.lineSoft }}
+                />
+                <AppText
+                  variant="body"
+                  fontSize={L.divider.size}
+                  style={{
+                    color: colors.fieldLine,
+                    marginHorizontal: s(L.divider.gap),
+                  }}
+                >
                   or
                 </AppText>
-                <View className="h-px flex-1 bg-text-muted opacity-40" />
+                <View
+                  className="h-px flex-1"
+                  style={{ backgroundColor: colors.lineSoft }}
+                />
               </View>
 
               <Button
                 title="login with google"
                 variant="google"
                 size="sm"
+                icon={
+                  <Image
+                    source={ASSETS.icons.google}
+                    contentFit="contain"
+                    style={{
+                      width: s(L.google.icon),
+                      height: s(L.google.icon),
+                      marginRight: s(L.google.iconGap),
+                    }}
+                  />
+                }
                 onPress={() => setToast({ type: 'info', message: 'Coming soon' })}
                 style={{
                   alignSelf: 'center',
                   marginTop: fy(L.google.y - (L.divider.y + L.divider.rowH)),
-                  minWidth: s(L.google.w),
-                  minHeight: Math.max(s(L.google.h), 44),
+                  width: s(L.google.w),
+                  minHeight: s(L.google.h),
+                  borderRadius: s(L.google.radius),
+                  paddingHorizontal: 0,
+                  paddingTop: s(2),
+                }}
+                textStyle={{
+                  fontSize: scaled(L.google.size),
+                  lineHeight: scaled(L.google.size) * 1.35,
+                  color: colors.black,
                 }}
               />
-
-              <Pressable
-                onPress={() => router.push('/(auth)/create-account')}
-                accessibilityRole="link"
-                accessibilityLabel="New here? Create an account"
-                className="items-center justify-center"
-                style={{ marginTop: fy(L.createAccount.y - (L.google.y + 44)), minHeight: 44 }}
-              >
-                <AppText
-                  variant="label"
-                  fontSize={L.createAccount.size}
-                  className="text-text-secondary underline"
-                >
-                  New here? Create an account
-                </AppText>
-              </Pressable>
             </View>
 
             <Image
@@ -256,7 +321,8 @@ export default function LoginScreen() {
               accessibilityElementsHidden
               importantForAccessibility="no-hide-descendants"
               style={{
-                marginTop: fy(L.duck.y - (L.createAccount.y + 44)),
+                alignSelf: 'flex-start',
+                marginTop: fy(L.duck.y - (L.google.y + L.google.h)),
                 marginLeft: fx(L.duck.x),
                 width: s(L.duck.w),
                 height: s(L.duck.h),

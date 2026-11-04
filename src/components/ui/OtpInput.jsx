@@ -9,6 +9,9 @@
  * - errorMessage: string shown below the boxes when error is true
  * - autoFocus: focuses the first box on mount
  * - boxSize / boxHeight: box width and height (default 56)
+ * - boxRadius / boxBorderWidth: hairline box styling (default 14 / 1)
+ * - inset: translucent white fill over a full-bleed page wash
+ * - shadow: soft drop shadow under each box (design default)
  * - gap: space between boxes (default 8)
  * - bare: removes the outer vertical margin (for Figma-placed rows)
  * - className
@@ -37,13 +40,14 @@ export function OtpInput({
   autoFocus = false,
   boxSize = 56,
   boxHeight = 56,
+  boxRadius = 14,
+  boxBorderWidth = 0.33,
   gap = 8,
   bare = false,
   className,
 }) {
   const { s } = useStage();
   const [digits, setDigits] = useState(() => toDigits(value, length));
-  const [focusedIndex, setFocusedIndex] = useState(autoFocus ? 0 : null);
   const inputRefs = useRef([]);
   const lastEmitted = useRef(value);
 
@@ -114,8 +118,6 @@ export function OtpInput({
             value={digits[index] || ''}
             onChangeText={(text) => handleChange(text, index)}
             onKeyPress={(event) => handleKeyPress(event, index)}
-            onFocus={() => setFocusedIndex(index)}
-            onBlur={() => setFocusedIndex((current) => (current === index ? null : current))}
             autoFocus={autoFocus && index === 0}
             keyboardType="number-pad"
             textContentType="oneTimeCode"
@@ -126,18 +128,23 @@ export function OtpInput({
             allowFontScaling={false}
             accessibilityLabel={`Verification digit ${index + 1}`}
             className={cx(
-              'rounded-lg border-[1.5px] py-0 text-center font-sans-semibold',
-              error
-                ? 'border-error bg-error-light text-error'
-                : focusedIndex === index
-                  ? 'border-primary bg-surface text-text-primary'
-                  : 'border-text-muted bg-surface text-text-primary'
+              'py-0 text-center font-sans-semibold',
+              error ? 'border-error text-error' : 'border-black text-text-primary'
             )}
             style={{
               width: s(boxSize),
               height: s(boxHeight),
+              borderRadius: s(boxRadius),
+              borderWidth: boxBorderWidth,
+              backgroundColor: error ? colors.errorLight : 'transparent',
               fontSize: s(24),
               lineHeight: s(30),
+              // The design boxes are not filled: the page wash shows through.
+              shadowColor: colors.black,
+              shadowOpacity: 0.33,
+              shadowRadius: s(5),
+              shadowOffset: { width: 0, height: s(2.5) },
+              elevation: 2,
             }}
           />
         ))}

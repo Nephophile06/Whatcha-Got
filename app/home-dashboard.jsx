@@ -42,23 +42,34 @@ export default function HomeDashboardScreen() {
   return (
     <View className="flex-1">
       <Screen
-        variant="mintPage"
+        variant="mintWash"
         padded={false}
         edges={[]}
         statusBarStyle="dark-content"
       >
         <Stage>
           <View style={{ width: W, minHeight: H }}>
-            <Image
-              source={ASSETS.images.cravingsHeroBanner}
-              contentFit="cover"
-              accessibilityLabel="Kitchen table with baking ingredients"
+            {/* The 412 x 212 banner is clipped to the designed 178-tall band,
+                keeping its lower part (the table) in view. */}
+            <View
               style={{
                 marginTop: fy(L.hero.y),
                 width: W,
-                height: s(L.hero.h),
+                height: fy(L.hero.h),
+                overflow: 'hidden',
               }}
-            />
+            >
+              <Image
+                source={ASSETS.images.cravingsHeroBanner}
+                contentFit="cover"
+                accessibilityLabel="Kitchen table with baking ingredients"
+                style={{
+                  width: W,
+                  height: W * (L.hero.artH / L.hero.w),
+                  marginTop: -W * (L.hero.crop / L.hero.w),
+                }}
+              />
+            </View>
 
             <AppText
               variant="display"
@@ -90,32 +101,37 @@ export default function HomeDashboardScreen() {
             </AppText>
 
             <View
-              className="flex-row items-center rounded-md border-[1.5px] border-text-primary bg-transparent px-md"
+              className="flex-row items-center bg-transparent"
               style={{
                 marginTop: fy(L.search.y - (L.subtitle.y + L.subtitle.h)),
                 marginLeft: fx(L.search.x),
                 width: fx(L.search.w),
                 minHeight: Math.max(s(L.search.h), 44),
+                borderRadius: s(L.search.r),
+                borderWidth: 1,
+                borderColor: colors.hairline,
+                paddingLeft: s(L.search.inset),
+                paddingRight: s(L.search.iconRight),
               }}
             >
               <TextInput
                 value={search}
                 onChangeText={setSearch}
                 placeholder="find something different..."
-                placeholderTextColor={colors.textMuted}
+                placeholderTextColor={colors.textPrimary}
                 selectionColor={colors.primary}
                 accessibilityLabel="Search ingredients"
                 allowFontScaling
                 maxFontSizeMultiplier={1.3}
-                className="flex-1 bg-transparent py-sm font-sans text-md text-text-primary"
-                style={{ minWidth: 0 }}
+                className="flex-1 bg-transparent py-0 font-sans text-text-primary"
+                style={{ fontSize: s(16), minWidth: 0 }}
               />
               <Image
                 source={ASSETS.icons.search}
                 contentFit="contain"
                 accessibilityElementsHidden
                 importantForAccessibility="no-hide-descendants"
-                style={{ width: s(24), height: s(24), marginLeft: s(8) }}
+                style={{ width: s(L.search.icon), height: s(L.search.icon) }}
               />
             </View>
 
@@ -125,7 +141,8 @@ export default function HomeDashboardScreen() {
                 marginTop: fy(L.grid.y - (L.search.y + L.search.h)),
                 marginLeft: fx(L.grid.x),
                 width: fx(L.grid.w),
-                rowGap: s(12),
+                rowGap: s(L.tile.gap),
+                columnGap: s(L.tile.gap),
               }}
             >
               {CRAVINGS.map((item) => (
@@ -134,6 +151,10 @@ export default function HomeDashboardScreen() {
                   image={item.image}
                   label={item.label}
                   tint="mint"
+                  art={L.tile.art[item.id]}
+                  artBand={L.tile.artBand}
+                  labelGap={L.tile.labelGap}
+                  labelSize={L.tile.labelSize}
                   selected={selectedCategories.includes(item.id)}
                   onPress={() => toggleCategory(item.id)}
                   style={{ width: s(L.tile.w), minHeight: s(L.tile.h) }}
@@ -148,8 +169,14 @@ export default function HomeDashboardScreen() {
               style={{
                 alignSelf: 'center',
                 marginTop: fy(L.continue.y - (L.grid.y + L.grid.h)),
-                minWidth: s(L.continue.w),
+                width: s(L.continue.w),
                 minHeight: Math.max(s(L.continue.h), 44),
+                borderRadius: s(L.continue.r),
+                paddingHorizontal: 0,
+              }}
+              textStyle={{
+                fontSize: s(L.continue.size),
+                lineHeight: s(L.continue.size) * 1.35,
               }}
             />
 

@@ -10,6 +10,7 @@
  * - loading: boolean, swaps the label for a spinner
  * - disabled: boolean, dims and blocks presses
  * - icon: optional React node shown before the label
+ * - textSize: overrides the label size (designs with non-standard CTA sizes)
  * - fullWidth: boolean, stretches to the parent width (default false)
  * - className / style / textStyle
  */
@@ -54,8 +55,8 @@ const LABEL = {
 };
 
 const SIZE = {
-  sm: 'min-h-[44px] px-md',
-  md: 'min-h-[48px] px-lg',
+  sm: 'min-h-[44px] px-lg',
+  md: 'min-h-[48px] px-xl',
   lg: 'min-h-[56px] px-xl',
 };
 
@@ -73,6 +74,7 @@ export function Button({
   loading = false,
   disabled = false,
   icon,
+  textSize,
   fullWidth = false,
   className,
   style,
@@ -120,7 +122,7 @@ export function Button({
         onPressOut?.(event);
       }}
       className={cx(
-        'max-w-full flex-row items-center justify-center gap-sm rounded-md border-[1.5px]',
+        'max-w-full flex-row items-center justify-center gap-sm rounded-full border-[1.5px]',
         SIZE[size],
         CONTAINER[resolvedVariant],
         pressed && !isDisabled && CONTAINER_PRESSED[resolvedVariant],
@@ -139,7 +141,7 @@ export function Button({
           {title ? (
             <AppText
               variant="button"
-              fontSize={TEXT_SIZE[size]}
+              fontSize={textSize ?? TEXT_SIZE[size]}
               className={cx('shrink text-center', LABEL[resolvedVariant], textClassName)}
               style={textStyleObject}
             >

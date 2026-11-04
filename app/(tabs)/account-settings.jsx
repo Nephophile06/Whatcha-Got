@@ -5,22 +5,21 @@ import { Image } from 'expo-image';
 import { Screen, Stage, AppText, Input, Button, Toast } from '../../src/components/ui';
 import { ASSETS } from '../../src/constants/assets';
 import { useAuthStore } from '../../src/store/authStore';
-import { colors } from '../../src/theme/tokens';
+import { colors, shadows } from '../../src/theme/tokens';
 import { useStage } from '../../src/lib/stage';
 import L from '../../src/layouts/account-settings';
 
 const ROSE_BUTTON = 'bg-primary-light border-primary-light';
-// The dense label is 11px on a 15px line so a label + 44px field is ~57px,
-// the Figma row step. Fields stack in flow and can never overlap.
-const DENSE_LABEL_LINE = 15;
-const HEADING_LINE = 1.5; // AppText body line-height ratio
 
 /**
- * Account Settings — lives inside app/(tabs) because the PNG shows the bottom
- * tab bar (Profile stays highlighted). Bands from account-settings.png: back
- * 70, avatar 133, heading 224, fields 268 / 325 / 382, done 450, heading 540,
- * field 588, send 656. The native header is disabled and the screen paints its
- * own back arrow (to /profile) + cream edge-to-edge background.
+ * Account Settings — bands from design/screens/account-settings.png:
+ * back 65, avatar 133, heading 236, fields 268 / 325 / 382, done 450,
+ * heading 555, field 588, send 656, tab bar 821.
+ *
+ * The design draws outline-only fields with placeholder copy. The shared Input
+ * keeps its persistent label by floating it at the placeholder position while
+ * the field is empty (see Input's floatingLabel), so the default frame matches
+ * the PNG and the label is still visible once the user types.
  */
 export default function AccountSettingsScreen() {
   const router = useRouter();
@@ -42,6 +41,7 @@ export default function AccountSettingsScreen() {
 
   const username = user?.username || 'Nondiní';
   const currentPhone = user?.phone || '01xxxxxxxxx';
+  const passwordError = Object.values(passwordErrors).find(Boolean);
 
   const clearPasswordError = (field) =>
     setPasswordErrors((current) =>
@@ -96,6 +96,22 @@ export default function AccountSettingsScreen() {
     }, 1000);
   };
 
+  // The design's CTAs are 42 px tall (below the 44 px touch minimum). Keep the
+  // drawn height and extend the press target vertically to 44 px on any stage.
+  const hitSlopFor = (figmaHeight) => {
+    const extra = Math.max(1, Math.ceil((44 - fy(figmaHeight)) / 2));
+    return { top: extra, bottom: extra };
+  };
+
+  const fieldProps = {
+    compact: true,
+    floatingLabel: true,
+    outline: true,
+    flush: true,
+    showPasswordToggle: false,
+    boxStyle: { height: fy(L.field.h) },
+  };
+
   return (
     <KeyboardAvoidingView
       className="flex-1"
@@ -103,21 +119,22 @@ export default function AccountSettingsScreen() {
     >
       <View className="flex-1">
         <Screen
-          variant="cream"
+          variant="creamBand"
           padded={false}
           edges={[]}
           statusBarStyle="dark-content"
         >
           <Stage minHeight={fy(L.tabBarTop)}>
-            <View style={{ width: W, minHeight: fy(L.tabBarTop) }}>
+            <View style={{ width: W, height: fy(L.tabBarTop) }}>
               <Pressable
                 onPress={() => router.push('/profile')}
                 accessibilityRole="button"
                 accessibilityLabel="Back to profile"
                 className="items-center justify-center"
                 style={{
-                  marginTop: fy(L.back.y),
-                  marginLeft: fx(L.back.x),
+                  position: 'absolute',
+                  left: fx(L.back.x),
+                  top: fy(L.back.y),
                   width: s(L.back.w),
                   height: s(L.back.h),
                 }}
@@ -127,49 +144,58 @@ export default function AccountSettingsScreen() {
                   contentFit="contain"
                   accessibilityElementsHidden
                   importantForAccessibility="no-hide-descendants"
-                  style={{ width: s(32), height: s(32) }}
+                  style={{ width: s(L.back.icon), height: s(L.back.icon) }}
                 />
               </Pressable>
 
               <View
-                className="flex-row items-center"
+                className="items-center justify-center rounded-full bg-surface"
                 style={{
-                  marginTop: fy(L.avatar.y - (L.back.y + L.back.h)),
-                  marginLeft: fx(L.avatar.x),
-                  marginRight: fx(45),
+                  position: 'absolute',
+                  left: fx(L.avatar.x),
+                  top: fy(L.avatar.y),
+                  width: s(L.avatar.w),
+                  height: s(L.avatar.h),
+                  ...shadows.sm,
                 }}
               >
-                <View
-                  className="items-center justify-center rounded-full bg-surface"
-                  style={{ width: s(L.avatar.w), height: s(L.avatar.h) }}
-                >
-                  <Image
-                    source={ASSETS.icons.customerProfile}
-                    contentFit="contain"
-                    accessibilityLabel="Profile avatar"
-                    style={{ width: s(34), height: s(34) }}
-                  />
-                </View>
-                <View style={{ flex: 1, marginLeft: fx(L.name.x - (L.avatar.x + L.avatar.w)) }}>
-                  <AppText
-                    variant="display"
-                    fontSize={L.name.size}
-                    numberOfLines={L.name.lines}
-                    adjustsFontSizeToFit
-                    minimumFontScale={0.85}
-                  >
-                    {username}
-                  </AppText>
-                  <AppText
-                    variant="body"
-                    fontSize={L.phone.size}
-                    className="text-text-primary"
-                    style={{ marginTop: fy(L.phone.y - (L.name.y + L.name.h)) }}
-                  >
-                    {currentPhone}
-                  </AppText>
-                </View>
+                <Image
+                  source={ASSETS.icons.customerProfile}
+                  contentFit="contain"
+                  accessibilityLabel="Profile avatar"
+                  style={{ width: s(L.avatar.icon), height: s(L.avatar.icon) }}
+                />
               </View>
+
+              <AppText
+                variant="display"
+                fontSize={L.name.size}
+                numberOfLines={L.name.lines}
+                adjustsFontSizeToFit
+                minimumFontScale={0.85}
+                style={{
+                  position: 'absolute',
+                  left: fx(L.name.x),
+                  top: fy(L.name.y),
+                  width: fx(L.name.w),
+                }}
+              >
+                {username}
+              </AppText>
+
+              <AppText
+                variant="body"
+                fontSize={L.phone.size}
+                className="text-text-primary"
+                style={{
+                  position: 'absolute',
+                  left: fx(L.phone.x),
+                  top: fy(L.phone.y),
+                  width: fx(L.phone.w),
+                }}
+              >
+                {currentPhone}
+              </AppText>
 
               <AppText
                 variant="body"
@@ -178,82 +204,118 @@ export default function AccountSettingsScreen() {
                 adjustsFontSizeToFit
                 minimumFontScale={0.85}
                 className="text-center"
-                style={{ marginTop: fy(L.heading1.y - (L.avatar.y + L.avatar.h)) }}
+                style={{ position: 'absolute', left: 0, right: 0, top: fy(L.heading1.y) }}
               >
                 Update password
               </AppText>
 
               <View
                 style={{
-                  alignSelf: 'center',
+                  position: 'absolute',
+                  left: fx(L.field.x),
+                  top: fy(L.field1Y),
                   width: fx(L.field.w),
-                  marginTop: Math.max(
-                    fy(L.field1Y - DENSE_LABEL_LINE) -
-                      (fy(L.heading1.y) + s(L.heading1.size * HEADING_LINE)),
-                    0
-                  ),
                 }}
               >
                 <Input
-                  compact
-                  denseLabel
-                  flush
+                  {...fieldProps}
                   label="Current Password"
-                  placeholder="Current Password"
                   value={currentPassword}
                   onChangeText={(value) => {
                     setCurrentPassword(value);
                     clearPasswordError('current');
                   }}
-                  error={passwordErrors.current}
+                  error={Boolean(passwordErrors.current)}
                   secure
                   autoComplete="current-password"
                 />
+              </View>
+
+              <View
+                style={{
+                  position: 'absolute',
+                  left: fx(L.field.x),
+                  top: fy(L.field2Y),
+                  width: fx(L.field.w),
+                }}
+              >
                 <Input
-                  compact
-                  denseLabel
-                  flush
+                  {...fieldProps}
                   label="New password"
-                  placeholder="New password"
                   value={newPassword}
                   onChangeText={(value) => {
                     setNewPassword(value);
                     clearPasswordError('new');
                   }}
-                  error={passwordErrors.new}
-                  secure
-                  autoComplete="new-password"
-                />
-                <Input
-                  compact
-                  denseLabel
-                  flush
-                  label="Confirm Password"
-                  placeholder="Confirm Password"
-                  value={confirmPassword}
-                  onChangeText={(value) => {
-                    setConfirmPassword(value);
-                    clearPasswordError('confirm');
-                  }}
-                  error={passwordErrors.confirm}
+                  error={Boolean(passwordErrors.new)}
                   secure
                   autoComplete="new-password"
                 />
               </View>
 
-              <Button
-                title="done"
-                size="md"
-                loading={passwordLoading}
-                onPress={handlePasswordSubmit}
-                className={ROSE_BUTTON}
-                textStyle={{ color: colors.primaryDark }}
+              <View
                 style={{
-                  marginTop: fy(L.done.y - (L.field3Y + 44)),
-                  minWidth: fx(L.done.w),
-                  minHeight: Math.max(s(L.done.h), 44),
+                  position: 'absolute',
+                  left: fx(L.field.x),
+                  top: fy(L.field3Y),
+                  width: fx(L.field.w),
                 }}
-              />
+              >
+                <Input
+                  {...fieldProps}
+                  label="Confirm Password"
+                  value={confirmPassword}
+                  onChangeText={(value) => {
+                    setConfirmPassword(value);
+                    clearPasswordError('confirm');
+                  }}
+                  error={Boolean(passwordErrors.confirm)}
+                  secure
+                  autoComplete="new-password"
+                />
+              </View>
+
+              {passwordError ? (
+                <AppText
+                  variant="caption"
+                  className="text-center text-error"
+                  numberOfLines={1}
+                  style={{ position: 'absolute', left: 0, right: 0, top: fy(L.error1Y) }}
+                >
+                  {passwordError}
+                </AppText>
+              ) : null}
+
+              <View
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: fy(L.done.y),
+                  alignItems: 'center',
+                }}
+              >
+                <Button
+                  title="done"
+                  variant="light"
+                  size="sm"
+                  textSize={L.done.size}
+                  loading={passwordLoading}
+                  onPress={handlePasswordSubmit}
+                  hitSlop={hitSlopFor(L.done.h)}
+                  className={ROSE_BUTTON}
+                  textStyle={{ color: colors.textInverse }}
+                  style={{
+                    backgroundColor: colors.primaryLight,
+                    borderColor: colors.primaryLight,
+                    minWidth: fx(L.done.w),
+                    minHeight: fy(L.done.h),
+                    height: fy(L.done.h),
+                    paddingHorizontal: 0,
+                    borderRadius: s(L.done.radius),
+                  }}
+                />
+              </View>
 
               <AppText
                 variant="body"
@@ -262,55 +324,75 @@ export default function AccountSettingsScreen() {
                 adjustsFontSizeToFit
                 minimumFontScale={0.85}
                 className="text-center"
-                style={{ marginTop: fy(L.heading2.y - (L.done.y + 44)) }}
+                style={{ position: 'absolute', left: 0, right: 0, top: fy(L.heading2.y) }}
               >
                 Update Phone Number
               </AppText>
 
               <View
                 style={{
-                  alignSelf: 'center',
+                  position: 'absolute',
+                  left: fx(L.field.x),
+                  top: fy(L.field4Y),
                   width: fx(L.field.w),
-                  marginTop: Math.max(
-                    fy(L.field4Y - DENSE_LABEL_LINE) -
-                      (fy(L.heading2.y) + s(L.heading2.size * HEADING_LINE)),
-                    0
-                  ),
                 }}
               >
                 <Input
-                  compact
-                  denseLabel
-                  flush
+                  {...fieldProps}
                   label="New Phone Number"
-                  placeholder="New Phone Number"
                   value={phone}
                   onChangeText={(value) => {
                     setPhone(value);
                     if (phoneError) setPhoneError('');
                   }}
-                  error={phoneError}
+                  error={Boolean(phoneError)}
                   keyboardType="phone-pad"
                   autoComplete="tel"
                   textContentType="telephoneNumber"
                 />
               </View>
 
-              <Button
-                title="send magic"
-                size="md"
-                loading={phoneLoading}
-                onPress={handlePhoneSubmit}
-                className={ROSE_BUTTON}
-                textStyle={{ color: colors.primaryDark }}
-                style={{
-                  marginTop: fy(L.send.y - (L.field4Y + 44)),
-                  minWidth: fx(L.send.w),
-                  minHeight: Math.max(s(L.send.h), 44),
-                }}
-              />
+              {phoneError ? (
+                <AppText
+                  variant="caption"
+                  className="text-center text-error"
+                  numberOfLines={1}
+                  style={{ position: 'absolute', left: 0, right: 0, top: fy(L.error2Y) }}
+                >
+                  {phoneError}
+                </AppText>
+              ) : null}
 
-              <View style={{ flexGrow: 1, minHeight: s(8) }} />
+              <View
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: fy(L.send.y),
+                  alignItems: 'center',
+                }}
+              >
+                <Button
+                  title="send magic"
+                  variant="light"
+                  size="sm"
+                  textSize={L.send.size}
+                  loading={phoneLoading}
+                  onPress={handlePhoneSubmit}
+                  hitSlop={hitSlopFor(L.send.h)}
+                  className={ROSE_BUTTON}
+                  textStyle={{ color: colors.textInverse }}
+                  style={{
+                    backgroundColor: colors.primaryLight,
+                    borderColor: colors.primaryLight,
+                    minWidth: fx(L.send.w),
+                    minHeight: fy(L.send.h),
+                    height: fy(L.send.h),
+                    paddingHorizontal: 0,
+                    borderRadius: s(L.send.radius),
+                  }}
+                />
+              </View>
             </View>
           </Stage>
         </Screen>

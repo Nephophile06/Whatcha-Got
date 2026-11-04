@@ -8,9 +8,14 @@
  * - error: string | boolean; shows the error message and error styling
  * - disabled: boolean, dims the field and blocks editing
  * - compact: boolean, 44px field height and 14px value text (dense forms)
- * - denseLabel: boolean, 11px label on a 15px line (label + 44px field is the
- *   57px Figma row step in Account Settings)
  * - flush: boolean, removes the default bottom margin (fields placed by rect)
+ * - boxStyle: overrides for the field box (radius, border, fill) when a design
+ *   uses a transparent hairline field instead of the default filled box
+ * - outline: 1px hairline box on a transparent fill (Account Settings). The
+ *   border darkens on focus and turns error red when validation fails.
+ * - floatingLabel: the label sits at the placeholder position while the field
+ *   is empty and shrinks inside the box once focused or filled. Designs that
+ *   only show a placeholder keep a persistent label without a second line.
  * - secure / secureTextEntry: password mode (adds a show/hide toggle)
  * - showPasswordToggle: override the automatic password toggle
  * - required: boolean, adds a required asterisk
@@ -20,9 +25,10 @@
  * Contrast: textPrimary on surface exceeds WCAG AAA; muted placeholders meet AA.
  */
 import React, { useState } from 'react';
-import { View, TextInput, Pressable } from 'react-native';
+import { View, TextInput, Pressable, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/tokens';
+import { useStage } from '../../lib/stage';
 import { AppText } from './AppText';
 import { cx } from './cx';
 
@@ -35,8 +41,9 @@ export function Input({
   helperText,
   disabled = false,
   compact = false,
-  denseLabel = false,
   flush = false,
+  outline = false,
+  floatingLabel = false,
   secure = false,
   secureTextEntry = false,
   showPasswordToggle,
@@ -47,12 +54,14 @@ export function Input({
   outsideIconClassName,
   className,
   style,
+  boxStyle,
   inputClassName,
   inputStyle,
   onFocus,
   onBlur,
   ...props
 }) {
+  const { s } = useStage();
   const [focused, setFocused] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -61,15 +70,16 @@ export function Input({
   const hasError = Boolean(error);
   const errorMessage = typeof error === 'string' ? error : null;
   const isFilled = value !== undefined && value !== null && String(value).length > 0;
+  // The label sits at the placeholder position until the field is in use.
+  const labelFloating = floatingLabel && (focused || isFilled || hasError);
 
   return (
     <View className={cx(flush ? 'w-full' : 'mb-md w-full', className)} style={style}>
-      {label ? (
+      {label && !floatingLabel ? (
         <AppText
           variant="label"
-          fontSize={denseLabel ? 11 : undefined}
           className={cx(
-            denseLabel ? 'mb-0' : 'mb-xs',
+            'mb-xs',
             hasError
               ? 'text-error'
               : disabled
@@ -78,15 +88,10 @@ export function Input({
                   ? 'text-primary'
                   : 'text-text-primary'
           )}
-          style={denseLabel ? { marginBottom: 0, lineHeight: 15 } : undefined}
         >
           {label}
           {required ? (
-            <AppText
-              variant="label"
-              fontSize={denseLabel ? 11 : undefined}
-              className="text-error"
-            >
+            <AppText variant="label" className="text-error">
               {' '}
               *
             </AppText>
@@ -121,39 +126,104 @@ export function Input({
                     ? 'border-text-muted bg-surface'
                     : 'border-text-muted bg-surface-subtle'
           )}
+          style={[
+            outline
+              ? {
+                  borderRadius: s(5),
+                  borderWidth: 1,
+                  borderColor: hasError
+                    ? colors.error
+                    : focused
+                      ? colors.textPrimary
+                      : colors.hairline,
+                  backgroundColor: 'transparent',
+                  paddingHorizontal: s(11),
+                }
+              : null,
+            boxStyle,
+          ]}
         >
           {leftIcon ? <View className="mr-sm">{leftIcon}</View> : null}
 
-          <TextInput
-            value={value}
-            onChangeText={onChangeText}
-            placeholder={placeholder}
-            placeholderTextColor={colors.textMuted}
-            selectionColor={colors.primary}
-            editable={!disabled}
-            secureTextEntry={isPassword && !passwordVisible}
-            accessibilityLabel={label}
-            accessibilityState={{ disabled }}
-            allowFontScaling
-            maxFontSizeMultiplier={1.3}
-            onFocus={(event) => {
-              setFocused(true);
-              onFocus?.(event);
+          <View
+            style={{
+              flex: 1,
+              minWidth: 0,
+              alignSelf: 'stretch',
+              justifyContent: labelFloating ? 'flex-end' : 'center',
             }}
-            onBlur={(event) => {
-              setFocused(false);
-              onBlur?.(event);
-            }}
-            autoCapitalize="none"
-            className={cx(
-              'min-w-0 flex-1 bg-transparent py-sm font-sans',
-              compact ? 'text-sm' : 'text-md',
-              disabled ? 'text-text-muted' : 'text-text-primary',
-              inputClassName
-            )}
-            style={inputStyle}
-            {...props}
-          />
+          >
+            {floatingLabel ? (
+              <View
+                pointerEvents="none"
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                style={
+                  labelFloating
+                    ? { position: 'absolute', left: 0, right: 0, top: s(3) }
+                    : { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, justifyContent: 'center' }
+                }
+              >
+                <AppText
+                  variant="caption"
+                  fontSize={labelFloating ? 10 : compact ? 14 : 16}
+                  numberOfLines={1}
+                  style={{
+                    color: hasError
+                      ? colors.error
+                      : labelFloating
+                        ? colors.textMuted
+                        : colors.fieldLine,
+                  }}
+                >
+                  {label}
+                  {required ? ' *' : ''}
+                </AppText>
+              </View>
+            ) : null}
+
+            <TextInput
+              value={value}
+              onChangeText={onChangeText}
+              placeholder={floatingLabel ? undefined : placeholder}
+              placeholderTextColor={colors.textMuted}
+              selectionColor={colors.primary}
+              editable={!disabled}
+              secureTextEntry={isPassword && !passwordVisible}
+              accessibilityLabel={label}
+              accessibilityState={{ disabled }}
+              allowFontScaling
+              maxFontSizeMultiplier={1.3}
+              onFocus={(event) => {
+                setFocused(true);
+                onFocus?.(event);
+              }}
+              onBlur={(event) => {
+                setFocused(false);
+                onBlur?.(event);
+              }}
+              autoCapitalize="none"
+              className={cx(
+                'min-w-0 w-full bg-transparent py-sm font-sans outline-none',
+                compact ? 'text-sm' : 'text-md',
+                disabled ? 'text-text-muted' : 'text-text-primary',
+                inputClassName
+              )}
+              style={[
+                Platform.OS === 'web' ? { outlineStyle: 'none' } : null,
+                floatingLabel && labelFloating
+                  ? {
+                      height: s(20),
+                      paddingTop: 0,
+                      paddingBottom: 0,
+                      marginBottom: s(6),
+                    }
+                  : null,
+                inputStyle,
+              ]}
+              {...props}
+            />
+          </View>
 
           {canTogglePassword ? (
             <Pressable
