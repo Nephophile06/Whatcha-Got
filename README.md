@@ -1,90 +1,56 @@
-# Whatcha Got? 🍽️
+# Whatcha Got? - Frontend Mobile Application 📱
 
-> **A practical, budget-friendly meal discovery and planning mobile experience.**  
-> Built with Expo Router (React Native) & Supabase.
-
----
-
-## 🌿 Branch Strategy
-
-This repository is organized into three dedicated branches:
-
-| Branch | Description | Key Directories |
-| :--- | :--- | :--- |
-| **`main`** | Unified production-ready repository with complete frontend, backend schema, and design specs. | `app/`, `src/`, `supabase/`, `design/`, `assets/` |
-| **`frontend`** | Mobile client application focused on UI, screens, state management, and design tokens. | `app/`, `src/components/`, `src/store/`, `src/theme/`, `assets/`, `design/` |
-| **`backend`** | Database schema, migrations, RLS policies, seed data, and Supabase integration services. | `supabase/`, `src/lib/`, `src/services/`, `.env.example` |
+> **Frontend client application built with Expo Router, React Native & Zustand.**
 
 ---
 
-## 📱 Features
+## 🎨 Design System & Accessibility
 
-- **Smart Meal Discovery:** Filter meals by ingredients on hand, cooking time, mood, and budget.
-- **Accessible Design System:** Persistent input labels, high-contrast palette (>= 7.5:1 ratio), action-oriented CTAs.
-- **Interactive Grocery List:** Quick-add ingredients directly from recipes, check-off pantry items.
-- **Calorie & Goal Tracking:** Daily target gauge, quick food logging, and breakdown.
-- **Favorites & Sharing:** Save go-to budget recipes and publish community creations.
+- **High-Contrast Palette:** Built with a minimum 7.5:1 text-to-background contrast ratio (exceeding WCAG AAA).
+- **Persistent Input Labels:** All form fields retain explicit visible labels to minimize cognitive fatigue.
+- **Action-Oriented CTAs:** Clear action verbs (e.g. `Save Goal`, `Share Recipe`, `Add to Grocery List`).
 
 ---
 
-## 🛠️ Tech Stack
+## 📂 Frontend Directory Structure
 
-- **Framework:** [Expo](https://expo.dev/) (SDK 58) with [Expo Router](https://docs.expo.dev/router/introduction/) (file-based navigation)
-- **UI & Components:** Custom high-contrast accessible component library
-- **State Management:** [Zustand](https://github.com/pmndrs/zustand)
-- **Database & Auth:** [Supabase](https://supabase.com/) (PostgreSQL, Row Level Security, Auth, Storage)
-- **Storage Persistence:** `@react-native-async-storage/async-storage`
+```
+├── app/                  # Expo-Router route tree
+│   ├── _layout.jsx       # Root stack, fonts, auth gate
+│   ├── index.jsx         # Initial route redirect
+│   ├── (auth)/           # Onboarding, Welcome, Create Account, Account Created, Login, Forgot Password, OTP
+│   ├── (tabs)/           # Home, Calorie Tracker, Grocery List, Favorites, Profile
+│   ├── account-settings.jsx
+│   ├── share-recipe.jsx
+│   └── target-calorie.jsx
+├── src/
+│   ├── components/
+│   │   ├── ui/           # Button, Input, Card, Chip, Toast, Screen
+│   │   └── feature/      # CategoryGrid, EmptyState, OtpInput, TabBar
+│   ├── store/            # Zustand stores: authStore, favoritesStore, groceryStore, calorieStore
+│   ├── theme/            # tokens.js (colors, typography, spacing, radius, shadows)
+│   └── constants/        # assets.js (central asset registry)
+├── assets/               # App icons, splash, images, fonts, illustrations
+└── design/               # tokens.md, screens-specification.md
+```
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Running the App
 
 ### 1. Install Dependencies
 ```bash
 npm install
 ```
 
-### 2. Environment Variables
-Copy `.env.example` to `.env`:
+### 2. Start Development Server
 ```bash
-cp .env.example .env
-```
-Add your Supabase project URL and anon public key.
-
-### 3. Start Development Server
-```bash
-# Start Expo Metro bundler
+# Metro bundler
 npm start
 
-# Run on Android
+# Android device / emulator
 npm run android
 
-# Run in Web browser
+# Web preview
 npm run web
 ```
-
----
-
-## 📂 Project Structure
-
-```
-├── app/                  # Expo-router screens & routes
-│   ├── _layout.jsx       # Root layout, auth gate & stack
-│   ├── index.jsx         # Redirect logic
-│   ├── (auth)/           # Onboarding, Welcome, Login, Sign Up, OTP
-│   └── (tabs)/           # Home, Calorie, Grocery List, Favorites, Profile
-├── src/
-│   ├── components/       # UI primitives (Button, Input, Toast) & Feature widgets
-│   ├── store/            # Zustand state stores (auth, favorites, grocery, calorie)
-│   ├── lib/              # Supabase client initialization
-│   ├── services/         # Auth, Recipes, and Storage service layer
-│   └── theme/            # Design tokens (colors, typography, spacing, radius)
-├── supabase/             # PostgreSQL database schema, RLS policies, and seed data
-├── assets/               # App icons, splash, fonts, illustrations
-└── design/               # Design tokens guide and screen flow specifications
-```
-
----
-
-## 📄 License
-MIT
